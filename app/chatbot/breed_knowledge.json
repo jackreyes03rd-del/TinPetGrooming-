@@ -1,0 +1,310 @@
+{
+  "breeds": [
+    {
+      "name": "Japanese Spitz",
+      "species": "dog",
+      "aliases": ["spitz", "nihon supittsu"],
+      "description": "A small to medium-sized companion dog from Japan with a pure white, fluffy double coat. Known for being intelligent, playful, alert, and excellent with families.",
+      "grooming": "Brush 2-3 times per week to prevent matting; daily brushing during shedding season (spring and fall). Professional grooming every 4-6 weeks for trim, bath, and hygiene. The white coat needs regular bathing to stay pristine. Use a slicker brush and metal comb for the double coat.",
+      "health": "Generally healthy breed. Can be prone to patellar luxation (kneecap dislocation), tear staining due to white facial fur, and dental issues if teeth are not brushed regularly. Average lifespan: 10-16 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Shih Tzu",
+      "species": "dog",
+      "aliases": ["shihtzu", "shitzu", "shi tzu", "chrysanthemum dog"],
+      "description": "An ancient Chinese toy breed with a long, flowing double coat. Friendly, affectionate, and great with children. Originally bred as a companion dog for Chinese royalty.",
+      "grooming": "Requires daily brushing to prevent tangles and mats. Professional grooming every 3-4 weeks is essential, including bath, haircut (teddy bear cut or puppy cut), nail trim, and ear cleaning. Pay special attention to the eyes and facial fur to prevent tear staining.",
+      "health": "Prone to brachycephalic airway syndrome (due to flat face), eye problems (proptosis, cataracts), dental disease, hip dysplasia, and ear infections. Regular eye cleaning and dental care are important. Lifespan: 10-18 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Poodle",
+      "species": "dog",
+      "aliases": ["toy poodle", "miniature poodle", "standard poodle", "pudel"],
+      "description": "Highly intelligent and hypoallergenic breed available in three sizes (toy, miniature, standard). Originally bred as water retrievers in Germany. Known for their curly, non-shedding coat and trainability.",
+      "grooming": "Poodles have continuously growing curly hair that tangles easily. Professional grooming every 4-6 weeks is essential. Popular cuts include puppy clip, continental clip, and modern cuts. Daily brushing at home prevents mats. Regular ear hair removal prevents infections.",
+      "health": "Prone to hip dysplasia, progressive retinal atrophy (PRA), Addison's disease, bloat (in standard poodles), epilepsy, and patellar luxation (in toy/miniature). Dental care is important. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Golden Retriever",
+      "species": "dog",
+      "aliases": ["golden", "goldie"],
+      "description": "A large, friendly, and intelligent breed from Scotland. Known for their golden coat, gentle temperament, and excellent family companionship. Popular as service dogs and therapy dogs.",
+      "grooming": "Brush 2-3 times per week; daily during heavy shedding seasons (spring and fall). Professional de-shedding treatment every 6-8 weeks helps manage loose undercoat. Bathe every 6-8 weeks. Trim feathering on legs, tail, and ears regularly. Check and clean ears weekly.",
+      "health": "Prone to hip dysplasia, elbow dysplasia, heart disease (subvalvular aortic stenosis), cancer (especially hemangiosarcoma and lymphoma), and eye conditions (cataracts, progressive retinal atrophy). Lifespan: 10-12 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Labrador Retriever",
+      "species": "dog",
+      "aliases": ["labrador", "lab"],
+      "description": "One of the most popular breeds worldwide. Medium to large, friendly, outgoing, and active. Originally bred as fishing and hunting dogs in Newfoundland. Excellent family pets and working dogs.",
+      "grooming": "Short double coat sheds heavily year-round and during seasonal blow-outs. Brush 2-3 times per week. Professional de-shedding treatment every 6-8 weeks. Bathe every 6-8 weeks or as needed. Trim nails regularly and check ears weekly (prone to ear infections).",
+      "health": "Prone to hip and elbow dysplasia, obesity (loves food!), exercise-induced collapse, progressive retinal atrophy, and ear infections. Weight management is crucial. Lifespan: 10-12 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "German Shepherd",
+      "species": "dog",
+      "aliases": ["gsd", "alsatian", "shepherd"],
+      "description": "Large, intelligent, and loyal working breed from Germany. Known for versatility in police, military, and service work. Confident, courageous, and protective of family.",
+      "grooming": "Double coat sheds heavily year-round and blows coat twice a year. Brush 3-4 times per week; daily during shedding season. NEVER shave a German Shepherd — the double coat regulates temperature. De-shedding treatment every 6-8 weeks. Bathe every 8-10 weeks.",
+      "health": "Prone to hip and elbow dysplasia, degenerative myelopathy (spinal cord disease), bloat, allergies, and exocrine pancreatic insufficiency. Regular exercise and joint supplements help. Lifespan: 9-13 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Siberian Husky",
+      "species": "dog",
+      "aliases": ["husky", "huskies", "sibe"],
+      "description": "Medium-sized working breed from Siberia. Known for striking blue or multi-colored eyes, thick double coat, and wolf-like appearance. Energetic, friendly, and independent.",
+      "grooming": "NEVER shave a Husky — the double coat insulates against both heat and cold and protects from sunburn. Brush 2-3 times per week; daily during shedding season (spring and fall blow-outs are extreme). De-shedding treatment every 6-8 weeks with high-velocity dryer. Bathe every 6-8 weeks.",
+      "health": "Generally healthy. Prone to hip dysplasia, eye conditions (cataracts, progressive retinal atrophy), zinc deficiency (causing skin issues), and hypothyroidism. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Beagle",
+      "species": "dog",
+      "aliases": ["beagles"],
+      "description": "Small to medium hound breed known for excellent sense of smell. Friendly, curious, and merry. Originally bred for hunting rabbits. Great with families and children.",
+      "grooming": "Short, dense coat requires minimal grooming. Brush weekly to remove loose hair. Bathe every 4-6 weeks or as needed. Clean ears weekly (floppy ears prone to infections). Trim nails every 3-4 weeks. Beagles can have a 'hound smell' — regular bathing helps.",
+      "health": "Prone to obesity (loves food!), ear infections, epilepsy, hypothyroidism, cherry eye, and hip dysplasia. Portion control and regular exercise are important. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Bulldog",
+      "species": "dog",
+      "aliases": ["english bulldog", "british bulldog"],
+      "description": "Medium-sized, muscular breed with a distinctive wrinkled face and pushed-in nose. Calm, courageous, and friendly. Known for their gentle disposition despite tough appearance.",
+      "grooming": "Short coat needs weekly brushing. IMPORTANT: Clean facial wrinkles daily with damp cloth to prevent infections. Bathe every 4-6 weeks. Apply balm to nose and paw pads (tend to dry out). Clean tail pocket if present. Trim nails regularly.",
+      "health": "Brachycephalic breed with breathing difficulties, prone to overheating, cherry eye, hip dysplasia, skin fold dermatitis, and allergies. Avoid exercise in hot weather. Lifespan: 8-10 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Yorkshire Terrier",
+      "species": "dog",
+      "aliases": ["yorkie", "yorkies", "york", "yorkshire"],
+      "description": "Tiny toy breed with a silky, floor-length coat. Bold, confident, and affectionate despite small size. Popular companion dog originally bred to catch rats in textile mills.",
+      "grooming": "Long, silky coat grows continuously like human hair and tangles easily. Daily brushing required or keep in a short puppy cut. Professional grooming every 4-6 weeks. Regular dental care essential (small breeds prone to dental disease). Tear stain cleaning needed.",
+      "health": "Prone to dental disease, patellar luxation, tracheal collapse, Legg-Calvé-Perthes disease, and hypoglycemia (especially in puppies). Delicate bones — handle carefully. Lifespan: 13-16 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Chihuahua",
+      "species": "dog",
+      "aliases": ["chi", "chihuahuas"],
+      "description": "The smallest dog breed, weighing 2-6 pounds. Big personality in a tiny package. Loyal, alert, and can be protective. Comes in long-coat and short-coat varieties.",
+      "grooming": "Short-coat: Brush weekly, bathe every 4-6 weeks. Long-coat: Brush 2-3 times per week to prevent tangles. Trim nails every 3-4 weeks (important due to small size). Clean ears and teeth regularly. Prone to tear staining — clean eyes daily.",
+      "health": "Prone to dental disease (small mouth), patellar luxation, hypoglycemia, heart problems (mitral valve disease), tracheal collapse, and hydrocephalus. Fragile bones. Lifespan: 14-16 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Dachshund",
+      "species": "dog",
+      "aliases": ["doxie", "wiener dog", "sausage dog", "dachs"],
+      "description": "Small breed with long body and short legs. Comes in three coat types: smooth, long-haired, and wire-haired. Brave, curious, and stubborn. Originally bred to hunt badgers.",
+      "grooming": "Smooth coat: Brush weekly, bathe every 6-8 weeks. Long-haired: Brush 2-3 times per week, professional grooming every 6-8 weeks. Wire-haired: Hand-strip 2-3 times a year, brush weekly. Trim nails regularly. Clean ears weekly.",
+      "health": "Extremely prone to intervertebral disc disease (IVDD) due to long spine. Avoid jumping and stairs. Also prone to obesity, dental disease, and epilepsy. Lifespan: 12-16 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Pomeranian",
+      "species": "dog",
+      "aliases": ["pom", "poms"],
+      "description": "Tiny toy breed with a thick, fluffy double coat and fox-like face. Bold, lively, and curious. Descended from larger Spitz breeds. Popular companion and show dog.",
+      "grooming": "Dense double coat sheds heavily twice a year. Brush 2-3 times per week; daily during shedding. Professional grooming every 4-6 weeks for trimming and sanitary areas. NEVER shave the coat — it may not grow back properly. Bathe every 4-6 weeks. Clean eyes daily (tear staining).",
+      "health": "Prone to patellar luxation, tracheal collapse, dental disease, alopecia X (coat loss), and hypoglycemia. Delicate bones. Lifespan: 12-16 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Maltese",
+      "species": "dog",
+      "aliases": ["maltese dog"],
+      "description": "Ancient toy breed with a long, silky white coat. Gentle, playful, and affectionate. Known for being hypoallergenic and excellent lap dogs. Dates back over 2,000 years.",
+      "grooming": "Long, silky coat grows continuously and tangles easily. Daily brushing required or keep in a short puppy cut. Professional grooming every 3-4 weeks. Tear stain cleaning essential for white coat — clean eyes daily. Bathe weekly or bi-weekly to keep white coat clean.",
+      "health": "Prone to dental disease, patellar luxation, portosystemic shunt (liver), white dog shaker syndrome, and reverse sneezing. Tear staining is cosmetic but persistent. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Rottweiler",
+      "species": "dog",
+      "aliases": ["rottie", "rott"],
+      "description": "Large, powerful working breed from Germany. Confident, calm, and courageous. Originally used for herding and guarding. Loyal and protective of family.",
+      "grooming": "Short, double coat sheds moderately year-round, heavily during seasonal changes. Brush weekly to remove loose hair. Bathe every 6-8 weeks. Trim nails regularly (important for large dogs). Clean ears weekly.",
+      "health": "Prone to hip and elbow dysplasia, osteosarcoma (bone cancer), bloat, heart problems (subaortic stenosis), and eye conditions. Lifespan: 8-10 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Boxer",
+      "species": "dog",
+      "aliases": ["boxers"],
+      "description": "Medium to large working breed from Germany. Energetic, playful, and patient with children. Known for their square jaw and muscular build. Excellent family dogs.",
+      "grooming": "Short, smooth coat requires minimal grooming. Brush weekly to remove loose hair. Bathe every 6-8 weeks. Clean facial wrinkles (if present) regularly. Trim nails every 3-4 weeks. Boxers drool moderately.",
+      "health": "Prone to cancer (especially mast cell tumors and lymphoma), heart problems (cardiomyopathy, aortic stenosis), hip dysplasia, and allergies. Brachycephalic breed with some breathing concerns. Lifespan: 10-12 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Cocker Spaniel",
+      "species": "dog",
+      "aliases": ["american cocker spaniel", "english cocker spaniel", "cocker"],
+      "description": "Medium-sized sporting breed with long, silky ears and coat. Gentle, happy, and eager to please. Originally bred for hunting birds. Affectionate family companions.",
+      "grooming": "Long, silky coat requires regular maintenance. Brush 2-3 times per week to prevent mats. Professional grooming every 4-6 weeks for trimming, especially around ears, legs, and belly. CRITICAL: Clean ears 2-3 times per week — floppy ears trap moisture and prone to infections. Bathe every 4-6 weeks.",
+      "health": "Very prone to ear infections (due to floppy ears), eye problems (cataracts, glaucoma, progressive retinal atrophy), hip dysplasia, and allergies. Regular ear cleaning is essential. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Corgi",
+      "species": "dog",
+      "aliases": ["pembroke welsh corgi", "cardigan welsh corgi", "corgis"],
+      "description": "Small herding breed with short legs and long body. Intelligent, affectionate, and alert. Two types: Pembroke (no tail) and Cardigan (with tail). Originally bred to herd cattle.",
+      "grooming": "Thick double coat sheds heavily year-round and extremely during seasonal blow-outs. Brush 3-4 times per week; daily during shedding season. De-shedding treatment every 6-8 weeks. Bathe every 6-8 weeks. Trim nails regularly.",
+      "health": "Prone to intervertebral disc disease (IVDD) due to long spine, hip dysplasia, progressive retinal atrophy, and obesity (loves food). Avoid excessive jumping and stairs. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Shiba Inu",
+      "species": "dog",
+      "aliases": ["shiba", "shibas"],
+      "description": "Small to medium Japanese breed with a fox-like appearance and curled tail. Independent, alert, and spirited. Known for 'Shiba scream' vocalizations. Ancient breed originally used for hunting.",
+      "grooming": "Thick double coat sheds moderately year-round and heavily twice a year (extreme blow-outs). Brush 2-3 times per week; daily during shedding. Bathe every 6-8 weeks (Shibas are naturally clean and dislike water). Never shave the double coat. De-shedding treatment helps during seasonal sheds.",
+      "health": "Generally healthy. Prone to hip dysplasia, patellar luxation, allergies, and glaucoma. Lifespan: 12-16 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Akita",
+      "species": "dog",
+      "aliases": ["akita inu", "american akita"],
+      "description": "Large, powerful Japanese breed. Loyal, dignified, and courageous. Strong-willed and independent. Excellent guard dogs but require experienced handling.",
+      "grooming": "Thick double coat sheds heavily year-round and extremely during seasonal changes (twice a year). Brush 2-3 times per week; daily during blow-outs. Never shave. De-shedding treatment every 6-8 weeks. Bathe every 8-10 weeks. Trim nails regularly.",
+      "health": "Prone to hip dysplasia, hypothyroidism, progressive retinal atrophy, bloat, and autoimmune diseases. Lifespan: 10-13 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Pug",
+      "species": "dog",
+      "aliases": ["pugs"],
+      "description": "Small companion breed with a wrinkled, flat face. Charming, playful, and affectionate. Known for their expressive faces and snorting sounds. Ancient Chinese breed.",
+      "grooming": "Short, double coat sheds heavily year-round. Brush 2-3 times per week. CRITICAL: Clean facial wrinkles daily with damp cloth and dry thoroughly to prevent skin fold dermatitis. Bathe every 4-6 weeks. Trim nails regularly. Clean ears weekly.",
+      "health": "Brachycephalic breed with severe breathing difficulties, prone to overheating, eye problems (proptosis, corneal ulcers), obesity, and skin fold infections. Avoid hot weather. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Doberman Pinscher",
+      "species": "dog",
+      "aliases": ["doberman", "dobie", "dobermann"],
+      "description": "Large, elegant working breed from Germany. Intelligent, loyal, and alert. Originally bred as guard dogs. Athletic and trainable.",
+      "grooming": "Short, sleek coat requires minimal grooming. Brush weekly to remove loose hair and distribute oils. Bathe every 6-8 weeks. Trim nails regularly. Clean ears weekly. Low-maintenance coat.",
+      "health": "Prone to dilated cardiomyopathy (heart disease), von Willebrand's disease (bleeding disorder), hip dysplasia, hypothyroidism, and bloat. Regular heart checkups important. Lifespan: 10-12 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Great Dane",
+      "species": "dog",
+      "aliases": ["dane", "gentle giant"],
+      "description": "Giant breed known for their enormous size but gentle temperament. Friendly, patient, and dependable. Originally bred for hunting boar. Despite size, they're gentle family dogs.",
+      "grooming": "Short coat is low-maintenance. Brush weekly to remove loose hair. Bathe every 6-8 weeks (requires large tub!). Trim nails regularly (important due to size). Clean ears weekly. Drool moderately — keep towel handy.",
+      "health": "Prone to bloat (life-threatening emergency), hip dysplasia, heart disease (dilated cardiomyopathy), bone cancer, and hypothyroidism. Short lifespan for a dog. Lifespan: 7-10 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Boston Terrier",
+      "species": "dog",
+      "aliases": ["boston", "american gentleman"],
+      "description": "Small companion breed with tuxedo-like markings. Friendly, intelligent, and lively. Known as 'American Gentleman' due to coat pattern. Compact and sturdy.",
+      "grooming": "Short, smooth coat requires minimal grooming. Brush weekly. Bathe every 4-6 weeks. Clean facial wrinkles (if present) daily. Trim nails every 3-4 weeks. Clean ears weekly. Wipe eyes regularly (prone to discharge).",
+      "health": "Brachycephalic breed with breathing difficulties, prone to eye problems (cataracts, cherry eye, corneal ulcers), patellar luxation, and deafness. Lifespan: 11-13 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Basset Hound",
+      "species": "dog",
+      "aliases": ["basset", "bassets"],
+      "description": "Medium-sized hound with long ears, short legs, and droopy eyes. Gentle, patient, and laid-back. Excellent sense of smell. Originally bred for hunting rabbits.",
+      "grooming": "Short coat requires weekly brushing. CRITICAL: Clean long ears 2-3 times per week (very prone to infections). Clean facial wrinkles and skin folds regularly (prone to dermatitis). Bathe every 4-6 weeks. Trim nails regularly. Bassets have a distinctive 'hound smell'.",
+      "health": "Prone to ear infections, obesity, bloat, hip and elbow dysplasia, glaucoma, and intervertebral disc disease (long spine). Weight management crucial. Lifespan: 12-13 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Persian Cat",
+      "species": "cat",
+      "aliases": ["persian", "longhair", "persian longhair"],
+      "description": "Long-haired cat breed with a flat face and round eyes. Gentle, calm, and sweet-natured. One of the oldest and most popular cat breeds. Requires significant grooming.",
+      "grooming": "Long, thick coat requires DAILY brushing to prevent mats (tangles form quickly). Professional grooming every 6-8 weeks recommended — lion cut or sanitary trim helps in warm climates. Bathe monthly or as needed. CRITICAL: Clean eyes daily (flat face causes excessive tearing and staining). Clean face folds regularly.",
+      "health": "Brachycephalic breed with breathing difficulties, prone to polycystic kidney disease (PKD), dental disease, eye conditions (entropion, cherry eye), and skin fold dermatitis. Lifespan: 12-17 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Maine Coon",
+      "species": "cat",
+      "aliases": ["maine coon cat", "coon cat"],
+      "description": "One of the largest domestic cat breeds with a long, shaggy coat. Friendly, intelligent, and playful. Known as 'gentle giants'. Native to Maine, USA. Dog-like personality.",
+      "grooming": "Long, water-resistant coat requires brushing 2-3 times per week to prevent mats. More frequent brushing during shedding season. Bathe every 6-8 weeks or as needed. Trim fur between paw pads. Clean ears weekly. Trim nails regularly.",
+      "health": "Prone to hypertrophic cardiomyopathy (heart disease), hip dysplasia (rare in cats), spinal muscular atrophy, and polycystic kidney disease. Regular heart checkups recommended. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Siamese Cat",
+      "species": "cat",
+      "aliases": ["siamese", "siam"],
+      "description": "Elegant, slender cat with striking blue eyes and color-point coat. Vocal, social, and intelligent. One of the oldest cat breeds from Thailand. Forms strong bonds with owners.",
+      "grooming": "Short, fine coat is low-maintenance. Brush weekly to remove loose hair and distribute oils. Bathe occasionally (every 2-3 months or as needed). Trim nails every 2-3 weeks. Clean ears weekly. Brush teeth regularly.",
+      "health": "Prone to amyloidosis (liver and kidney disease), asthma, dental disease, progressive retinal atrophy, and heart disease. Lifespan: 12-20 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Ragdoll Cat",
+      "species": "cat",
+      "aliases": ["ragdoll"],
+      "description": "Large, long-haired cat with striking blue eyes. Known for going limp when picked up (like a ragdoll). Gentle, calm, and affectionate. Excellent with children and other pets.",
+      "grooming": "Semi-long, silky coat tangles less than Persian but still requires brushing 2-3 times per week. Professional grooming every 6-8 weeks optional but helpful. Bathe every 6-8 weeks or as needed. Trim nails regularly. Clean ears weekly.",
+      "health": "Prone to hypertrophic cardiomyopathy (heart disease), polycystic kidney disease, and obesity (laid-back personality). Regular heart screening recommended. Lifespan: 12-17 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "British Shorthair",
+      "species": "cat",
+      "aliases": ["british shorthair cat", "brit"],
+      "description": "Medium to large cat with dense, plush coat and round face. Calm, easygoing, and independent. Known for their teddy bear appearance. Ancient British breed.",
+      "grooming": "Dense, plush short coat requires weekly brushing to remove loose hair. Sheds moderately. Bathe occasionally (every 2-3 months) or as needed. Trim nails every 2-3 weeks. Clean ears weekly. Low-maintenance grooming.",
+      "health": "Prone to obesity (calm personality), hypertrophic cardiomyopathy (heart disease), polycystic kidney disease, and dental disease. Weight management important. Lifespan: 12-20 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Sphynx Cat",
+      "species": "cat",
+      "aliases": ["sphynx", "hairless cat", "sphinx"],
+      "description": "Hairless cat breed (actually has fine downy fuzz). Energetic, affectionate, and dog-like. Known for warm, suede-like skin. Requires unique care due to lack of fur.",
+      "grooming": "UNIQUE: Requires WEEKLY BATHS to remove skin oils (no fur to absorb them). Wipe down with damp cloth between baths. Clean ears weekly (wax builds up quickly). Trim nails regularly. Keep warm in cold weather (no fur for insulation).",
+      "health": "Prone to skin conditions (without fur protection), heart disease (hypertrophic cardiomyopathy), respiratory issues, and sunburn. Requires indoor living. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Bengal Cat",
+      "species": "cat",
+      "aliases": ["bengal"],
+      "description": "Athletic cat with wild-looking spotted or marbled coat. Energetic, playful, and intelligent. Bred from Asian leopard cat × domestic cat. Loves water and climbing.",
+      "grooming": "Short, dense coat is low-maintenance. Brush weekly to remove loose hair and distribute oils. Bathe occasionally (Bengals often enjoy water). Trim nails every 2-3 weeks. Clean ears weekly. Provide scratching posts.",
+      "health": "Generally healthy. Prone to progressive retinal atrophy, flat-chested kitten syndrome, hypertrophic cardiomyopathy, and patellar luxation. Lifespan: 12-16 years.",
+      "good_for_first_time_owner": false
+    },
+    {
+      "name": "Scottish Fold",
+      "species": "cat",
+      "aliases": ["scottish fold cat", "fold"],
+      "description": "Medium-sized cat with distinctive folded ears (caused by cartilage mutation). Sweet, calm, and adaptable. Known for sitting in 'Buddha position'. Scottish breed.",
+      "grooming": "Short or long-haired varieties. Short-hair: Brush weekly. Long-hair: Brush 2-3 times per week. Bathe occasionally. CRITICAL: Clean ears gently and regularly (folded ears can trap wax and debris). Trim nails every 2-3 weeks.",
+      "health": "Prone to osteochondrodysplasia (painful joint disease caused by fold gene), arthritis, ear infections (due to folded ears), and heart disease. Ethical concerns about breeding. Lifespan: 11-15 years.",
+      "good_for_first_time_owner": true
+    },
+    {
+      "name": "Abyssinian Cat",
+      "species": "cat",
+      "aliases": ["aby", "abyssinian"],
+      "description": "Slender, athletic cat with ticked coat (each hair has multiple colors). Active, playful, and curious. One of the oldest cat breeds. Loves to climb and explore.",
+      "grooming": "Short, fine coat is low-maintenance. Brush weekly to remove loose hair and keep coat shiny. Bathe occasionally (every 2-3 months) or as needed. Trim nails every 2-3 weeks. Clean ears weekly. Brush teeth regularly.",
+      "health": "Prone to progressive retinal atrophy (leading to blindness), pyruvate kinase deficiency (anemia), amyloidosis (kidney disease), and dental disease. Lifespan: 12-15 years.",
+      "good_for_first_time_owner": true
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+TIN PET GROOMING — DEMO ACCOUNTS
+==========================================
+
+[ Pet Owner ]
+  Name     : Ella Mendoza
+  Email    : owner@tinpet.local
+  Password : owner123
+
+  Name     : Paolo Cruz
+  Email    : owner2@tinpet.local
+  Password : owner123
+
+  Name     : Maria Garcia
+  Email    : owner3@tinpet.local
+  Password : owner123
+
+  Name     : Jose Reyes
+  Email    : owner4@tinpet.local
+  Password : owner123
+
+[ Staff / Groomer ]
+  Name     : Mika Santos
+  Email    : groomer@tinpet.local
+  Password : groomer123
+
+  Name     : Ana Lim
+  Email    : staff2@tinpet.local
+  Password : staff123
+
+[ Admin ]
+  Name     : Tin Pet Admin
+  Email    : admin@tinpet.local
+  Password : admin123

@@ -1,0 +1,89 @@
+<article class="list-row stacked health-record-row">
+  <div class="stack-sm">
+    <div>
+      <strong>{{ record.name }} | {{ record.breed }}</strong>
+      <p>
+        {{ record.species }} | Owner: {{ record.owner_name }}
+        {% if show_owner_phone %}| {{ record.owner_phone }}{% endif %}
+      </p>
+    </div>
+    <div class="flag-row">
+      {% if record.allergies %}<span class="flag-warn">Allergy: {{ record.allergies }}</span>{% else %}<span class="flag-ok">No allergies</span>{% endif %}
+      {% if record.medications %}<span class="meta-chip">Meds: {{ record.medications }}</span>{% endif %}
+      {% if record.diet_stage %}<span class="meta-chip">Diet stage: {{ record.diet_stage|replace('_', ' ')|title }}</span>{% endif %}
+      {% if record.body_condition %}<span class="meta-chip">Body condition: {{ record.body_condition|replace('_', ' ')|title }}</span>{% endif %}
+      {% if record.emotional_condition %}<span class="meta-chip">Emotion: {{ record.emotional_condition|replace('_', ' ')|title }}</span>{% endif %}
+      {% if record.recommended_shampoo %}<span class="meta-chip">Shampoo: {{ record.recommended_shampoo }}</span>{% endif %}
+      {% if record.handling_readiness %}<span class="meta-chip">Handling: {{ record.handling_readiness|replace('_', ' ')|title }}</span>{% endif %}
+    </div>
+    <p>Medical history: {{ record.medical_history or 'None' }}</p>
+
+    {% if record.latest_nutrition_log or record.latest_behavior_log or record.latest_product_recommendation or record.latest_handling_assessment %}
+    <div class="panel panel-inset stack-sm health-profile-summary">
+      <div>
+        <p class="eyebrow">Latest care recommendations</p>
+        <h4>Recent grooming and wellness notes</h4>
+      </div>
+      <div class="health-detail-grid">
+        {% if record.latest_nutrition_log %}
+        <div class="health-detail-card">
+          <strong>Nutrition</strong>
+          <p>
+            {% if record.latest_nutrition_log.food_brand %}Food: {{ record.latest_nutrition_log.food_brand }}<br>{% endif %}
+            {% if record.latest_nutrition_log.recommended_food_type %}Recommended type: {{ record.latest_nutrition_log.recommended_food_type }}<br>{% endif %}
+            {% if record.latest_nutrition_log.feeding_frequency %}Feeding: {{ record.latest_nutrition_log.feeding_frequency }}<br>{% endif %}
+            {% if record.latest_nutrition_log.coat_support_goal %}Coat goal: {{ record.latest_nutrition_log.coat_support_goal }}{% endif %}
+          </p>
+          {% if record.latest_nutrition_log.nutrition_notes %}<p>Notes: {{ record.latest_nutrition_log.nutrition_notes }}</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if record.latest_behavior_log %}
+        <div class="health-detail-card">
+          <strong>Behavior</strong>
+          <p>
+            Emotion: {{ record.latest_behavior_log.emotional_condition|replace('_', ' ')|title }}<br>
+            {% if record.latest_behavior_log.handling_recommendation %}Handling: {{ record.latest_behavior_log.handling_recommendation|replace('_', ' ')|title }}<br>{% endif %}
+            {% set has_trigger = record.latest_behavior_log.trigger_noise or record.latest_behavior_log.trigger_touch or record.latest_behavior_log.trigger_dryer or record.latest_behavior_log.trigger_nail_trim or record.latest_behavior_log.trigger_ear_cleaning %}
+            {% if has_trigger %}
+            Triggers:
+            {% if record.latest_behavior_log.trigger_noise %}Noise {% endif %}
+            {% if record.latest_behavior_log.trigger_touch %}Touch {% endif %}
+            {% if record.latest_behavior_log.trigger_dryer %}Dryer {% endif %}
+            {% if record.latest_behavior_log.trigger_nail_trim %}Nail trim {% endif %}
+            {% if record.latest_behavior_log.trigger_ear_cleaning %}Ear cleaning{% endif %}
+            {% endif %}
+          </p>
+          {% if record.latest_behavior_log.behavior_notes %}<p>Notes: {{ record.latest_behavior_log.behavior_notes }}</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if record.latest_product_recommendation %}
+        <div class="health-detail-card">
+          <strong>Product Recommendation</strong>
+          <p>
+            Shampoo: {{ record.latest_product_recommendation.recommended_shampoo }}<br>
+            Coat: {{ record.latest_product_recommendation.coat_type|replace('_', ' ')|title }}<br>
+            Skin: {{ record.latest_product_recommendation.skin_condition|replace('_', ' ')|title }}
+            {% if record.latest_product_recommendation.parasite_status %}<br>Parasites: {{ record.latest_product_recommendation.parasite_status|replace('_', ' ')|title }}{% endif %}
+          </p>
+          {% if record.latest_product_recommendation.recommendation_reason %}<p>Reason: {{ record.latest_product_recommendation.recommendation_reason }}</p>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if record.latest_handling_assessment %}
+        <div class="health-detail-card">
+          <strong>Handling Assessment</strong>
+          <p>
+            Readiness: {{ record.latest_handling_assessment.handling_readiness|replace('_', ' ')|title }}<br>
+            Bath/Dryer: {{ record.latest_handling_assessment.bath_tolerance|title }} / {{ record.latest_handling_assessment.dryer_tolerance|title }}<br>
+            Brush/Nails/Ears: {{ record.latest_handling_assessment.brushing_tolerance|title }} / {{ record.latest_handling_assessment.nail_trim_tolerance|title }} / {{ record.latest_handling_assessment.ear_cleaning_tolerance|title }}
+          </p>
+          {% if record.latest_handling_assessment.handling_notes %}<p>Notes: {{ record.latest_handling_assessment.handling_notes }}</p>{% endif %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</article>

@@ -1,0 +1,32 @@
+<section class="panel stack assistant-panel" data-chat-panel>
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Assistant</p>
+      <h3>{{ assistant_title }}</h3>
+    </div>
+  </div>
+  <div class="chat-surface">
+    <div class="chat-log" data-chat-log aria-live="polite">
+      {% for message in chat_messages %}
+      <div class="chat-bubble {{ message.role }}" data-chat-role="{{ message.role }}">{{ message.content }}</div>
+      {% endfor %}
+    </div>
+    <div class="assistant-toolbar">
+      <div class="stack-sm">
+        <p class="eyebrow">Suggested replies</p>
+        <p class="assistant-hint">Tap a suggestion to send it instantly, or edit it before sending.</p>
+      </div>
+      <span class="assistant-status" data-chat-status>Ready</span>
+    </div>
+    <div class="assistant-suggestions" data-chat-suggestions>
+      {% for prompt in quick_prompts %}
+      <button class="suggestion-chip" type="button" data-chat-suggestion="{{ prompt }}">{{ prompt }}</button>
+      {% endfor %}
+    </div>
+    <form class="inline-form chat-composer" method="post" action="{{ url_for('chatbot.chat', scope=chat_scope) }}" data-chat-form>
+      <input type="hidden" name="next" value="{{ chat_next }}">
+      <input type="text" name="question" placeholder="{{ chat_placeholder }}" required autocomplete="off" data-chat-input>
+      <button class="button" type="submit" data-chat-send>Send</button>
+    </form>
+  </div>
+</section>

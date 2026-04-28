@@ -1,0 +1,1092 @@
+{% extends 'base.html' %}
+
+{% block title %}Owner Portal{% endblock %}
+
+{% block content %}
+{% if section == 'dashboard' %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Owner dashboard</p>
+    <h2>Welcome back, {{ current_user.name.split()[0] }}.</h2>
+    <p class="hero-copy">Your pets, bookings, and care history in one place.</p>
+    <div class="hero-pills">
+      <span>{{ upcoming|length }} upcoming</span>
+      <span>{{ pets|length }} pets</span>
+      <span>{{ completed_count }} completed visits</span>
+    </div>
+  </div>
+</section>
+
+<section class="card-grid stat-grid">
+  <article class="stat-card"><span>Upcoming</span><strong>{{ upcoming|length }}</strong><small>Active bookings</small></article>
+  <article class="stat-card"><span>Pets</span><strong>{{ pets|length }}</strong><small>Profiles on file</small></article>
+  <article class="stat-card"><span>Completed</span><strong>{{ completed_count }}</strong><small>Rated visits</small></article>
+</section>
+
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Quick actions</p>
+        <h3>Move fast</h3>
+      </div>
+    </div>
+    <div class="quick-card-grid">
+      <a class="quick-card quick-card-primary" href="{{ url_for('owner.owner_portal', section='book') }}">
+        <strong>Book now</strong>
+        <span>Pick a pet, service, and live slot.</span>
+      </a>
+      <a class="quick-card" href="{{ url_for('owner.owner_portal', section='pets') }}">
+        <strong>My pets</strong>
+        <span>Update profiles and health records.</span>
+      </a>
+      <a class="quick-card" href="{{ url_for('owner.owner_portal', section='history') }}">
+        <strong>History</strong>
+        <span>Review bookings and past visits.</span>
+      </a>
+    </div>
+  </article>
+
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Next appointment</p>
+        <h3>{% if next_appointment %}{{ next_appointment.pet_name }}{% else %}None scheduled{% endif %}</h3>
+      </div>
+    </div>
+    {% if next_appointment %}
+    <div class="detail-block">
+      <strong>{{ next_appointment.service_name }}</strong>
+      <p>{{ format_slot(next_appointment.slot_start) }}</p>
+      <p>Groomer: {{ next_appointment.groomer_name }}</p>
+      {% if next_appointment.add_ons %}<p>Add-ons: {{ next_appointment.add_ons }}</p>{% endif %}
+    </div>
+    <form method="post" action="{{ url_for('owner.cancel_owner_booking', appointment_id=next_appointment.id) }}">
+      <button class="button button-danger" type="submit">Cancel Appointment</button>
+    </form>
+    {% else %}
+    <p class="muted">Book a slot to see your next visit here.</p>
+    {% endif %}
+  </article>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Pets</p>
+      <h3>Your profiles</h3>
+    </div>
+  </div>
+  <div class="pet-pill-row">
+    {% for pet in pets %}
+    <span class="pet-pill">{{ pet.name }} | {{ pet.breed }}</span>
+    {% endfor %}
+  </div>
+  <div class="card-grid pet-grid">
+    {% for pet in pets %}
+    <article class="pet-card">
+      <span class="meta-chip">{{ pet.species }} | {{ pet.breed }}</span>
+      <h4>{{ pet.name }}</h4>
+      <p>{{ pet.age }} years | {{ pet.weight }} kg</p>
+      {% if pet.allergies %}<p>Allergies: {{ pet.allergies }}</p>{% endif %}
+      {% if pet.recommended_shampoo or pet.emotional_condition or pet.handling_readiness or pet.latest_behavior_log or pet.latest_handling_assessment %}
+      <div class="flag-row">
+        {% if pet.recommended_shampoo %}<span class="meta-chip-light">{{ pet.recommended_shampoo }}</span>{% endif %}
+        {% if pet.emotional_condition %}<span class="meta-chip-light">{{ pet.emotional_condition|replace('_', ' ')|title }}</span>{% endif %}
+        {% if pet.handling_readiness %}<span class="meta-chip-light">{{ pet.handling_readiness|replace('_', ' ')|title }}</span>{% elif pet.latest_handling_assessment %}<span class="meta-chip-light">{{ pet.latest_handling_assessment.handling_readiness|replace('_', ' ')|title }}</span>{% endif %}
+      </div>
+      {% endif %}
+      <a class="text-link" href="{{ url_for('owner.owner_portal', section='pets', pet_id=pet.id) }}">Edit profile</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+<div class="footer-note">Tin Pet Grooming | {{ city }}</div>
+{% elif section == 'book' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Booking</p>
+      <h3>Create appointment</h3>
+    </div>
+  </div>
+  {% if not pets %}
+  <p class="muted">Add a pet profile before booking.</p>
+  <a class="button" href="{{ url_for('owner.owner_portal', section='pets') }}">Add Pet</a>
+  {% else %}
+  <div class="step-strip">
+    <span class="step-chip step-chip-done">1. Choose pet</span>
+    <span class="step-chip step-chip-active">2. Pick service</span>
+    <span class="step-chip">3. Select slot</span>
+  </div>
+  <form class="stack panel panel-inset" method="get" action="{{ url_for('owner.owner_portal') }}">
+    <input type="hidden" name="section" value="book">
+    <div class="grid-three">
+      <label>
+        <span>Service</span>
+        <select name="service">
+          {% for name, info in service_details.items() %}
+          <option value="{{ name }}" {% if selected_service == name %}selected{% endif %}>{{ name }} | {{ info.price }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Groomer</span>
+        <select name="groomer_id">
+          {% for groomer in groomers %}
+          <option value="{{ groomer.id }}" {% if selected_groomer_id == groomer.id %}selected{% endif %}>{{ groomer.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Date</span>
+        <input type="date" name="date" value="{{ selected_date.isoformat() }}">
+      </label>
+    </div>
+    <button class="button button-secondary" type="submit">Load Availability</button>
+  </form>
+  <form class="stack" method="post" action="{{ url_for('owner.create_owner_booking') }}">
+    <input type="hidden" name="booking_date" value="{{ selected_date.isoformat() }}">
+    <input type="hidden" name="groomer_id" value="{{ selected_groomer_id or '' }}">
+    <input type="hidden" name="service_name" value="{{ selected_service }}">
+    <div class="grid-two">
+      <label>
+        <span>Pet</span>
+        <select name="pet_id" required>
+          {% for pet in pets %}
+          <option value="{{ pet.id }}">{{ pet.name }} | {{ pet.breed }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="detail-block">
+        <strong>{{ selected_service }}</strong>
+        <p>{% for groomer in groomers %}{% if groomer.id == selected_groomer_id %}{{ groomer.name }}{% endif %}{% endfor %}</p>
+        <p>{{ selected_date.strftime('%B %d, %Y') }}</p>
+      </div>
+    </div>
+    <div class="slot-grid">
+      {% for slot in available_slots %}
+      <label class="slot-option">
+        <input type="radio" name="slot_id" value="{{ slot.id }}" required>
+        <span>{{ slot.slot_start.strftime('%I:%M %p') }} - {{ slot.slot_end.strftime('%I:%M %p') }}</span>
+      </label>
+      {% else %}
+      <p class="muted">No available slots for this date.</p>
+      {% endfor %}
+    </div>
+    <fieldset class="checkbox-grid">
+      <legend>Add-ons</legend>
+      {% for add_on in add_ons %}
+      <label class="check-pill"><input type="checkbox" name="add_ons" value="{{ add_on }}"> <span>{{ add_on }}</span></label>
+      {% endfor %}
+    </fieldset>
+    <label>
+      <span>Notes</span>
+      <textarea name="notes" rows="4"></textarea>
+    </label>
+    <label class="toggle-row"><input type="checkbox" name="send_sms" checked> <span>Send SMS confirmation</span></label>
+    <button class="button" type="submit">Confirm Booking</button>
+  </form>
+  {% endif %}
+</section>
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Availability</p>
+      <h3>Selected day</h3>
+    </div>
+  </div>
+  <div class="slot-grid static-grid">
+    {% for slot in slot_options %}
+    <div class="slot-pill {% if slot.status == 'available' %}slot-open{% else %}slot-busy{% endif %}">{{ slot.slot_start.strftime('%I:%M %p') }}</div>
+    {% else %}
+    <p class="muted">No slots configured yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% elif section == 'pets' %}
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Profiles</p>
+        <h3>My pets</h3>
+      </div>
+    </div>
+    {% for pet in pets %}
+    <div class="list-row pet-row">
+      <div>
+        <strong>{{ pet.name }}</strong>
+        <p>{{ pet.species }} | {{ pet.breed }}</p>
+        <div class="flag-row">
+          {% if pet.allergies %}<span class="flag-warn">Allergy: {{ pet.allergies }}</span>{% else %}<span class="flag-ok">No allergies</span>{% endif %}
+          {% if pet.vaccination_link %}<span class="flag-ok">Vaccination on file</span>{% else %}<span class="flag-warn">No vaccination record</span>{% endif %}
+        </div>
+        {% include '_owner_pet_recommendation_summary.html' %}
+      </div>
+      <div class="list-actions">
+        {% if pet.vaccination_link %}<a class="text-link" href="{{ pet.vaccination_link }}">Record</a>{% endif %}
+        <a class="text-link" href="{{ url_for('owner.owner_portal', section='pets', pet_id=pet.id) }}">View / Edit</a>
+        <a class="text-link btn-delete" href="#" onclick="deletePet({{ pet.id }}, '{{ pet.name }}'); return false;">Delete</a>
+      </div>
+    </div>
+    {% else %}
+    <p class="muted">No pets yet.</p>
+    {% endfor %}
+    <div style="margin-top: 1.5rem;">
+      <button type="button" class="button" id="openAddPetModal">
+        <span>+ Add New Pet</span>
+      </button>
+    </div>
+  </article>
+  
+  {% if selected_pet %}
+  
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Form</p>
+        <h3>Edit {{ selected_pet.name }}</h3>
+      </div>
+    </div>
+    <form id="editPetForm" class="stack" method="post" enctype="multipart/form-data" action="{{ url_for('owner.save_owner_pet') }}">
+      <input type="hidden" name="pet_id" value="{{ selected_pet.id }}">
+      <div class="grid-two">
+        <label>
+          <span>Name <span class="required">*</span></span>
+          <input type="text" name="name" value="{{ selected_pet.name }}" required>
+        </label>
+        <label>
+          <span>Species</span>
+          <select name="species">
+            {% for species in species_options %}
+            <option value="{{ species }}" {% if selected_pet.species == species %}selected{% endif %}>{{ species }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="grid-three">
+        <label>
+          <span>Breed <span class="required">*</span></span>
+          <select name="breed" id="editBreedSelect" required>
+            {% if selected_pet.breed %}
+            <option value="{{ selected_pet.breed }}" selected>{{ selected_pet.breed }}</option>
+            {% endif %}
+            {% for b in breeds_for_pet %}
+            {% if b != selected_pet.breed %}
+            <option value="{{ b }}">{{ b }}</option>
+            {% endif %}
+            {% endfor %}
+            <option value="_other">Other (type below)</option>
+          </select>
+          <input type="text" name="breed_other" id="editBreedOther" placeholder="Enter breed" style="display:none; margin-top:0.4rem;">
+        </label>
+        <label>
+          <span>Age (years)</span>
+          <input type="number" name="age" min="0" max="30" value="{{ selected_pet.age }}">
+        </label>
+        <label>
+          <span>Weight (kg)</span>
+          <input type="number" step="0.1" name="weight" min="0.1" value="{{ selected_pet.weight }}">
+        </label>
+      </div>
+      <div class="grid-two">
+        <label>
+          <span>Coat Type</span>
+          <select name="coat_type">
+            <option value="">-- Select --</option>
+            {% for ct in coat_type_options %}
+            <option value="{{ ct }}" {% if selected_pet.coat_type == ct %}selected{% endif %}>{{ ct }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          <span>Temperament</span>
+          <select name="temperament">
+            <option value="">-- Select --</option>
+            {% for t in temperament_options %}
+            <option value="{{ t }}" {% if selected_pet.temperament == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <label>
+        <span>Medical History</span>
+        <textarea name="medical_history" rows="3">{{ selected_pet.medical_history or '' }}</textarea>
+      </label>
+      <div class="grid-two">
+        <fieldset class="checkbox-group">
+          <legend>Allergies</legend>
+          {% set current_allergies = (selected_pet.allergies or '').split(', ') %}
+          {% for opt in allergy_options %}
+          <label class="check-pill">
+            <input type="checkbox" name="allergies" value="{{ opt }}"
+              {% if opt in current_allergies %}checked{% endif %}
+              {% if opt == 'None' %}data-exclusive="true"{% endif %}
+              class="allergy-check">
+            <span>{{ opt }}</span>
+          </label>
+          {% endfor %}
+          <div id="editAllergyOtherWrap" style="display:{% if 'Other' in current_allergies %}block{% else %}none{% endif %}; margin-top:0.4rem;">
+            <input type="text" name="allergies_other" placeholder="Specify allergy" value="{{ selected_pet.allergies if selected_pet.allergies and 'Other' not in allergy_options else '' }}">
+          </div>
+        </fieldset>
+        <fieldset class="checkbox-group">
+          <legend>Medications</legend>
+          {% set current_medications = (selected_pet.medications or '').split(', ') %}
+          {% for opt in medication_options %}
+          <label class="check-pill">
+            <input type="checkbox" name="medications" value="{{ opt }}"
+              {% if opt in current_medications %}checked{% endif %}
+              {% if opt == 'None' %}data-exclusive="true"{% endif %}
+              class="medication-check">
+            <span>{{ opt }}</span>
+          </label>
+          {% endfor %}
+          <div id="editMedicationOtherWrap" style="display:{% if 'Other' in current_medications %}block{% else %}none{% endif %}; margin-top:0.4rem;">
+            <input type="text" name="medications_other" placeholder="Specify medication">
+          </div>
+        </fieldset>
+      </div>
+      <label>
+        <span>Vaccination Record</span>
+        <input type="file" name="vaccination_file">
+        {% if selected_pet.vaccination_records_url %}
+        <small class="muted">Current file on record</small>
+        {% endif %}
+      </label>
+      <label>
+        <span>Vaccine Expiry (optional)</span>
+        <input type="date" name="vaccine_expiry" value="{{ selected_pet.vaccine_expiry or '' }}">
+      </label>
+      <button type="submit" class="button">Save Changes</button>
+    </form>
+  </article>
+  {% else %}
+  
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Quick Start</p>
+        <h3>Manage Your Pets</h3>
+      </div>
+    </div>
+    <p>Click "Add New Pet" to register your furry friend. We'll guide you through a simple 3-step process:</p>
+    <ul style="margin-left: 1.5rem; color: var(--muted);">
+      <li><strong>Step 1:</strong> Basic information (name, breed, age, weight)</li>
+      <li><strong>Step 2:</strong> Health details (allergies, medications, medical history)</li>
+      <li><strong>Step 3:</strong> Vaccination history (past vaccines – locked after save)</li>
+    </ul>
+    <p class="muted" style="margin-top: 1rem;">All your pet's info will be saved securely and ready for booking appointments.</p>
+  </article>
+  {% endif %}
+</section>
+
+{% if selected_pet %}
+<section style="margin-top:1.5rem;">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">{{ selected_pet.name }}</p>
+        <h3>Vaccination Records</h3>
+      </div>
+    </div>
+    {% set pet = selected_pet %}
+    {% include '_pet_vaccination_manager.html' %}
+  </article>
+</section>
+{% endif %}
+
+<div id="addPetModal" class="modal" style="display: none;">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Pet – Step 1 of 3</h3>
+      <button type="button" class="modal-close" id="closeModalBtn">&times;</button>
+    </div>
+    
+    
+    <div class="modal-progress">
+      <div class="progress-step active" data-step="1">
+        <div class="progress-circle">1</div>
+        <span>Personal</span>
+      </div>
+      <div class="progress-step" data-step="2">
+        <div class="progress-circle">2</div>
+        <span>Health</span>
+      </div>
+      <div class="progress-step" data-step="3">
+        <div class="progress-circle">3</div>
+        <span>Vaccines</span>
+      </div>
+    </div>
+    
+    <form id="addPetForm" enctype="multipart/form-data">
+      
+      <div class="modal-step active" data-step="1">
+        <div class="grid-two">
+          <label>
+            <span>Pet Name <span class="required">*</span></span>
+            <input type="text" name="name" id="petName" required placeholder="e.g., Buddy">
+          </label>
+          <label>
+            <span>Species</span>
+            <select name="species" id="petSpecies">
+              {% for species in species_options %}
+              <option value="{{ species }}">{{ species }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <label>
+          <span>Breed <span class="required">*</span></span>
+          <select name="breed" id="petBreed" required>
+            <option value="">-- Select species first --</option>
+          </select>
+          <input type="text" name="breed_other" id="petBreedOther" placeholder="Enter breed name" style="display:none; margin-top:0.4rem;">
+        </label>
+        <div class="grid-two">
+          <label>
+            <span>Coat Type</span>
+            <select name="coat_type" id="petCoatType">
+              <option value="">-- Select --</option>
+              {% for ct in coat_type_options %}
+              <option value="{{ ct }}">{{ ct }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Temperament</span>
+            <select name="temperament" id="petTemperament">
+              <option value="">-- Select --</option>
+              {% for t in temperament_options %}
+              <option value="{{ t }}">{{ t }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="grid-two">
+          <label>
+            <span>Age (years) <span class="required">*</span></span>
+            <input type="number" name="age" id="petAge" min="0" max="30" required value="1">
+          </label>
+          <label>
+            <span>Weight (kg) <span class="required">*</span></span>
+            <input type="number" step="0.1" name="weight" id="petWeight" min="0.1" required value="5.0">
+          </label>
+        </div>
+      </div>
+      
+      
+      <div class="modal-step" data-step="2">
+        <fieldset class="checkbox-group">
+          <legend>Allergies</legend>
+          {% for opt in allergy_options %}
+          <label class="check-pill">
+            <input type="checkbox" name="allergies" value="{{ opt }}"
+              {% if opt == 'None' %}data-exclusive="true"{% endif %}
+              class="modal-allergy-check">
+            <span>{{ opt }}</span>
+          </label>
+          {% endfor %}
+          <div id="modalAllergyOtherWrap" style="display:none; margin-top:0.4rem;">
+            <input type="text" name="allergies_other" id="petAllergiesOther" placeholder="Specify allergy">
+          </div>
+        </fieldset>
+        <fieldset class="checkbox-group">
+          <legend>Medications</legend>
+          {% for opt in medication_options %}
+          <label class="check-pill">
+            <input type="checkbox" name="medications" value="{{ opt }}"
+              {% if opt == 'None' %}data-exclusive="true"{% endif %}
+              class="modal-medication-check">
+            <span>{{ opt }}</span>
+          </label>
+          {% endfor %}
+          <div id="modalMedicationOtherWrap" style="display:none; margin-top:0.4rem;">
+            <input type="text" name="medications_other" id="petMedicationsOther" placeholder="Specify medication">
+          </div>
+        </fieldset>
+        <label>
+          <span>Medical History</span>
+          <textarea name="medical_history" id="petMedicalHistory" rows="4" placeholder="Previous illnesses, surgeries, or conditions (optional)"></textarea>
+        </label>
+      </div>
+      
+      
+      <div class="modal-step" data-step="3">
+        <p class="muted" style="margin-bottom:1rem; font-size:0.9rem;">
+          Record your pet's vaccination history below. These records will be <strong>locked after registration</strong> – only staff can modify them later.
+        </p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <strong>Vaccination Records <span class="muted" style="font-weight:normal;">(optional)</span></strong>
+          <button type="button" class="button" id="addVaxRowBtn" style="padding:6px 14px; font-size:0.85rem;">+ Add Vaccine</button>
+        </div>
+        <div id="vaxRowsContainer" style="display:flex; flex-direction:column; gap:0.75rem;"></div>
+        <input type="hidden" id="vaccinesJson" name="vaccines_json" value="[]">
+        <div id="modalError" class="alert alert-error" style="display: none; margin-top:1rem;"></div>
+      </div>
+    </form>
+    
+    <div class="modal-footer">
+      <button type="button" class="button button-secondary" id="modalCancelBtn">Cancel</button>
+      <button type="button" class="button button-secondary" id="modalPrevBtn" style="display: none;">← Previous</button>
+      <button type="button" class="button" id="modalNextBtn">Next →</button>
+      <button type="button" class="button" id="modalSubmitBtn" style="display: none;">
+        <span id="submitBtnText">Save Pet</span>
+        <span id="submitBtnSpinner" class="spinner" style="display: none;"></span>
+      </button>
+    </div>
+  </div>
+</div>
+
+
+<div id="toast" class="toast" style="display: none;"></div>
+
+
+<script>
+(function() {
+  const modal = document.getElementById('addPetModal');
+  if (!modal) return;
+  
+  const openBtn = document.getElementById('openAddPetModal');
+  const closeBtn = document.getElementById('closeModalBtn');
+  const cancelBtn = document.getElementById('modalCancelBtn');
+  const prevBtn = document.getElementById('modalPrevBtn');
+  const nextBtn = document.getElementById('modalNextBtn');
+  const submitBtn = document.getElementById('modalSubmitBtn');
+  const form = document.getElementById('addPetForm');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalError = document.getElementById('modalError');
+  const toast = document.getElementById('toast');
+  
+  let currentStep = 1;
+  const totalSteps = 3;
+  let formData = {};
+  
+  function showToast(message, type = 'success') {
+    toast.textContent = message;
+    toast.className = 'toast toast-' + type;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, 4000);
+  }
+  
+  function openModal() {
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    showStep(1);
+    form.reset();
+    formData = {};
+  }
+  
+  function closeModal(force = false) {
+    if (!force && isFormDirty()) {
+      if (!confirm('You have unsaved changes. Are you sure you want to close?')) {
+        return;
+      }
+    }
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    hideError();
+  }
+  
+  function isFormDirty() {
+    const inputs = form.querySelectorAll('input, textarea, select');
+    for (let input of inputs) {
+      if (input.type === 'file') {
+        if (input.files && input.files.length > 0) return true;
+      } else if (input.value.trim()) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
+  function showError(message) {
+    modalError.textContent = message;
+    modalError.style.display = 'block';
+  }
+  
+  function hideError() {
+    modalError.style.display = 'none';
+  }
+  
+  function showStep(step) {
+    currentStep = step;
+    
+    
+    modalTitle.textContent = `Add Pet – Step ${step} of ${totalSteps}`;
+    
+    
+    document.querySelectorAll('.modal-step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.modal-step[data-step="${step}"]`).classList.add('active');
+    
+    
+    document.querySelectorAll('.progress-step').forEach((s, idx) => {
+      s.classList.toggle('active', idx < step);
+    });
+    
+    
+    prevBtn.style.display = step > 1 ? 'inline-block' : 'none';
+    nextBtn.style.display = step < totalSteps ? 'inline-block' : 'none';
+    submitBtn.style.display = step === totalSteps ? 'inline-block' : 'none';
+    cancelBtn.style.display = step === 1 ? 'inline-block' : 'none';
+    
+    hideError();
+  }
+  
+  function validateStep(step) {
+    hideError();
+    
+    if (step === 1) {
+      const name = document.getElementById('petName').value.trim();
+      const breedSel = document.getElementById('petBreed');
+      const breedOther = document.getElementById('petBreedOther');
+      const breed = breedSel.value === '_other' ? breedOther.value.trim() : breedSel.value.trim();
+      const age = parseInt(document.getElementById('petAge').value);
+      const weight = parseFloat(document.getElementById('petWeight').value);
+      
+      if (!name) {
+        showError('Pet name is required');
+        return false;
+      }
+      if (!breed) {
+        showError('Breed is required');
+        return false;
+      }
+      if (age < 0 || age > 30) {
+        showError('Age must be between 0 and 30 years');
+        return false;
+      }
+      if (weight <= 0) {
+        showError('Weight must be a positive number');
+        return false;
+      }
+    }
+    
+    if (step === 2) {
+      
+    }
+    
+    if (step === 3) {
+      const rows = collectVaxRows();
+      for (const row of rows) {
+        if (!row.vaccine_name.trim()) {
+          showError('Each vaccine row must have a vaccine name.');
+          return false;
+        }
+      }
+    }
+    
+    return true;
+  }
+  
+  function nextStep() {
+    if (!validateStep(currentStep)) return;
+    if (currentStep < totalSteps) {
+      showStep(currentStep + 1);
+    }
+  }
+  
+  function prevStep() {
+    if (currentStep > 1) {
+      showStep(currentStep - 1);
+    }
+  }
+  
+  async function submitForm() {
+    if (!validateStep(currentStep)) return;
+    
+    
+    const btnText = document.getElementById('submitBtnText');
+    const spinner = document.getElementById('submitBtnSpinner');
+    btnText.style.display = 'none';
+    spinner.style.display = 'inline-block';
+    submitBtn.disabled = true;
+    
+    try {
+      const formData = new FormData(form);
+      
+      const breedSel = document.getElementById('petBreed');
+      const breedOther = document.getElementById('petBreedOther');
+      if (breedSel && breedSel.value === '_other' && breedOther && breedOther.value.trim()) {
+        formData.set('breed', breedOther.value.trim());
+      }
+      
+      serializeVaxRows();
+      
+      const response = await fetch('/owner/api/owner/pets/add', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        showToast(result.message || 'Pet added successfully!', 'success');
+        closeModal(true);
+        
+        setTimeout(() => {
+          window.location.href = '{{ url_for("owner.owner_portal", section="pets") }}';
+        }, 500);
+      } else {
+        showError(result.error || 'Failed to add pet');
+        btnText.style.display = 'inline-block';
+        spinner.style.display = 'none';
+        submitBtn.disabled = false;
+      }
+    } catch (error) {
+      showError('Network error. Please try again.');
+      btnText.style.display = 'inline-block';
+      spinner.style.display = 'none';
+      submitBtn.disabled = false;
+    }
+  }
+  
+  
+  if (openBtn) openBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', () => closeModal());
+  cancelBtn.addEventListener('click', () => closeModal());
+  prevBtn.addEventListener('click', prevStep);
+  nextBtn.addEventListener('click', nextStep);
+  submitBtn.addEventListener('click', submitForm);
+  
+  
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal || e.target.classList.contains('modal-backdrop')) {
+      closeModal();
+    }
+  });
+  
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.style.display === 'block') {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  const VACCINE_NAMES = ['Rabies','DHPP','FVRCP','Bordetella','Leptospirosis','Canine Influenza','Lyme Disease','Giardia','Other'];
+  let vaxRowCount = 0;
+
+  function buildVaxRow() {
+    vaxRowCount++;
+    const idx = vaxRowCount;
+    const div = document.createElement('div');
+    div.className = 'vax-row';
+    div.dataset.idx = idx;
+    div.style.cssText = 'background:#f9f9f9;border:1px solid var(--border,#ddd);border-radius:8px;padding:12px;position:relative;';
+    div.innerHTML = `
+      <button type="button" onclick="removeVaxRow(${idx})"
+        style="position:absolute;top:8px;right:8px;background:#f44336;color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1;">✕</button>
+      <div class="grid-two" style="gap:0.5rem;">
+        <label style="margin:0;">
+          <span style="font-size:0.85rem;">Vaccine Name <span style="color:red;">*</span></span>
+          <select class="vax-name" style="width:100%;">
+            ${VACCINE_NAMES.map(n => `<option value="${n}">${n}</option>`).join('')}
+          </select>
+        </label>
+        <label style="margin:0;">
+          <span style="font-size:0.85rem;">Date Administered</span>
+          <input type="date" class="vax-date" style="width:100%;">
+        </label>
+      </div>
+      <div class="grid-two" style="gap:0.5rem;margin-top:0.5rem;">
+        <label style="margin:0;">
+          <span style="font-size:0.85rem;">Next Due Date</span>
+          <input type="date" class="vax-due" style="width:100%;">
+        </label>
+        <label style="margin:0;">
+          <span style="font-size:0.85rem;">Veterinarian</span>
+          <input type="text" class="vax-vet" placeholder="e.g. City Vet" style="width:100%;">
+        </label>
+      </div>
+      <label style="margin:0.5rem 0 0;">
+        <span style="font-size:0.85rem;">Notes</span>
+        <input type="text" class="vax-notes" placeholder="Optional notes" style="width:100%;">
+      </label>
+    `;
+    return div;
+  }
+
+  window.removeVaxRow = function(idx) {
+    const row = document.querySelector(`.vax-row[data-idx="${idx}"]`);
+    if (row) row.remove();
+  };
+
+  function collectVaxRows() {
+    return Array.from(document.querySelectorAll('.vax-row')).map(row => ({
+      vaccine_name: row.querySelector('.vax-name').value,
+      date_administered: row.querySelector('.vax-date').value || null,
+      next_due_date: row.querySelector('.vax-due').value || null,
+      vet_name: row.querySelector('.vax-vet').value.trim() || null,
+      notes: row.querySelector('.vax-notes').value.trim() || null,
+    }));
+  }
+
+  function serializeVaxRows() {
+    document.getElementById('vaccinesJson').value = JSON.stringify(collectVaxRows());
+  }
+
+  document.getElementById('addVaxRowBtn').addEventListener('click', () => {
+    document.getElementById('vaxRowsContainer').appendChild(buildVaxRow());
+  });
+
+})();
+
+
+function deletePet(petId, petName) {
+  console.log('Delete clicked for pet:', petId, petName);
+  
+  if (!confirm(`Are you sure you want to delete ${petName}?\n\nThis action cannot be undone. All related records will be permanently removed.`)) {
+    console.log('User cancelled deletion');
+    return;
+  }
+  
+  console.log('Sending delete request to:', `/owner/api/owner/pets/${petId}/delete`);
+  
+  
+  const toast = document.getElementById('toast');
+  
+  fetch(`/owner/api/owner/pets/${petId}/delete`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    return response.json();
+  })
+  .then(result => {
+    console.log('Response data:', result);
+    if (result.success) {
+      
+      if (toast) {
+        toast.textContent = result.message || 'Pet deleted successfully!';
+        toast.className = 'toast toast-success';
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 3000);
+      }
+      
+      setTimeout(() => {
+        window.location.href = '{{ url_for("owner.owner_portal", section="pets") }}';
+      }, 500);
+    } else {
+      alert('Error: ' + (result.error || 'Failed to delete pet'));
+    }
+  })
+  .catch(error => {
+    console.error('Delete error:', error);
+    alert('Network error. Please try again. Check console for details.');
+  });
+}
+</script>
+
+
+<script>
+(function () {
+  
+  function populateBreedSelect(selectEl, otherInputEl, species, currentBreed) {
+    if (!species) return;
+    fetch('/owner/api/breeds?species=' + encodeURIComponent(species))
+      .then(r => r.json())
+      .then(data => {
+        const breeds = data.breeds || [];
+        selectEl.innerHTML = '';
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = '-- Select breed --';
+        selectEl.appendChild(placeholder);
+        breeds.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b;
+          opt.textContent = b;
+          if (b === currentBreed) opt.selected = true;
+          selectEl.appendChild(opt);
+        });
+        const otherOpt = document.createElement('option');
+        otherOpt.value = '_other';
+        otherOpt.textContent = 'Other (type below)';
+        if (!breeds.includes(currentBreed) && currentBreed) {
+          otherOpt.selected = true;
+          if (otherInputEl) {
+            otherInputEl.style.display = 'block';
+            otherInputEl.value = currentBreed;
+            otherInputEl.required = true;
+          }
+        }
+        selectEl.appendChild(otherOpt);
+      })
+      .catch(() => {});
+  }
+
+  
+  const editPetForm = document.getElementById('editPetForm');
+  const editBreedSel = document.getElementById('editBreedSelect');
+  const editBreedOther = document.getElementById('editBreedOther');
+  const editSpeciesSel = editPetForm ? editPetForm.querySelector('select[name="species"]') : null;
+
+  if (editBreedSel && editSpeciesSel) {
+    const currentBreed = editBreedSel.querySelector('option[selected]')?.value || '';
+    
+    editBreedSel.addEventListener('change', function () {
+      const isOther = this.value === '_other';
+      if (editBreedOther) {
+        editBreedOther.style.display = isOther ? 'block' : 'none';
+        editBreedOther.required = isOther;
+        if (!isOther) editBreedOther.value = '';
+      }
+    });
+    editSpeciesSel.addEventListener('change', function () {
+      populateBreedSelect(editBreedSel, editBreedOther, this.value, '');
+    });
+  }
+
+  
+  if (editPetForm && editBreedSel && editBreedOther) {
+    editPetForm.addEventListener('submit', function () {
+      if (editBreedSel.value === '_other' && editBreedOther.value.trim()) {
+        
+        const hiddenBreed = document.createElement('input');
+        hiddenBreed.type = 'hidden';
+        hiddenBreed.name = 'breed';
+        hiddenBreed.value = editBreedOther.value.trim();
+        
+        editBreedSel.disabled = true;
+        editPetForm.appendChild(hiddenBreed);
+      }
+    });
+  }
+
+  
+  const petSpeciesSel = document.getElementById('petSpecies');
+  const petBreedSel = document.getElementById('petBreed');
+  const petBreedOther = document.getElementById('petBreedOther');
+
+  if (petSpeciesSel && petBreedSel) {
+    petSpeciesSel.addEventListener('change', function () {
+      populateBreedSelect(petBreedSel, petBreedOther, this.value, '');
+    });
+    petBreedSel.addEventListener('change', function () {
+      const isOther = this.value === '_other';
+      if (petBreedOther) {
+        petBreedOther.style.display = isOther ? 'block' : 'none';
+        petBreedOther.required = isOther;
+        if (!isOther) petBreedOther.value = '';
+      }
+    });
+    
+    if (petSpeciesSel.value) {
+      populateBreedSelect(petBreedSel, petBreedOther, petSpeciesSel.value, '');
+    }
+  }
+
+  
+  function setupCheckboxGroup(groupClass, otherWrapId) {
+    const checkboxes = document.querySelectorAll('.' + groupClass);
+    const otherWrap = document.getElementById(otherWrapId);
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', function () {
+        if (this.dataset.exclusive === 'true' && this.checked) {
+          
+          checkboxes.forEach(other => {
+            if (other !== this) { other.checked = false; other.disabled = false; }
+          });
+          if (otherWrap) otherWrap.style.display = 'none';
+        } else if (this.value === 'Other') {
+          if (otherWrap) otherWrap.style.display = this.checked ? 'block' : 'none';
+          if (!this.checked && otherWrap) {
+            const txt = otherWrap.querySelector('input[type="text"]');
+            if (txt) txt.value = '';
+          }
+          
+          checkboxes.forEach(other => {
+            if (other.dataset.exclusive === 'true') other.checked = false;
+          });
+        } else if (this.checked) {
+          
+          checkboxes.forEach(other => {
+            if (other.dataset.exclusive === 'true') other.checked = false;
+          });
+        }
+      });
+    });
+  }
+
+  
+  setupCheckboxGroup('allergy-check', 'editAllergyOtherWrap');
+  setupCheckboxGroup('medication-check', 'editMedicationOtherWrap');
+
+  
+  setupCheckboxGroup('modal-allergy-check', 'modalAllergyOtherWrap');
+  setupCheckboxGroup('modal-medication-check', 'modalMedicationOtherWrap');
+})();
+</script>
+
+
+{% elif section == 'history' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Appointments</p>
+      <h3>Upcoming and past visits</h3>
+    </div>
+  </div>
+  {% for appointment in upcoming %}
+  <article class="appointment-card">
+    <div>
+      <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+      <p>{{ format_slot(appointment.slot_start) }} | {{ appointment.groomer_name }}</p>
+      <span class="status-badge status-{{ appointment.status }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+    </div>
+    <form method="post" action="{{ url_for('owner.cancel_owner_booking', appointment_id=appointment.id) }}">
+      <button class="button button-danger" type="submit">Cancel</button>
+    </form>
+  </article>
+  {% else %}
+  <p class="muted">No upcoming appointments.</p>
+  {% endfor %}
+</section>
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Visits</p>
+      <h3>Past records</h3>
+    </div>
+  </div>
+  {% for appointment in past %}
+  <article class="appointment-card stack-sm">
+    <div>
+      <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+      <p>{{ format_slot(appointment.slot_start) }} | {{ appointment.groomer_name }}</p>
+      <span class="status-badge status-{{ appointment.status }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+    </div>
+    {% if appointment.pet_profile %}
+    {% set pet = appointment.pet_profile %}
+    {% include '_owner_pet_recommendation_summary.html' %}
+    {% endif %}
+    {% if appointment.status == 'completed' %}
+    <form class="inline-form" method="post" action="{{ url_for('owner.rate_owner_booking', appointment_id=appointment.id) }}">
+      <select name="rating">
+        {% for rating in range(1, 6) %}
+        <option value="{{ rating }}" {% if appointment.rating == rating %}selected{% endif %}>{{ rating }}</option>
+        {% endfor %}
+      </select>
+      <button class="button button-secondary" type="submit">Save Rating</button>
+    </form>
+    {% endif %}
+  </article>
+  {% else %}
+  <p class="muted">No past visits yet.</p>
+  {% endfor %}
+</section>
+{% else %}
+
+{% endif %}
+{% endblock %}

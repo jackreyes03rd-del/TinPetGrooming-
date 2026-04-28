@@ -1,0 +1,274 @@
+{% set _vid = 'vm_' ~ pet.id %}
+{% set _is_owner = current_user.role == 'owner' %}
+
+<div class="vaccination-manager" id="{{ _vid }}_container">
+    <div class="section-head" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <p class="eyebrow">Health Records</p>
+            <h3>💉 Vaccination History</h3>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="{{ url_for('owner.download_vaccination_card', pet_id=pet.id) }}"
+               class="button" style="text-decoration:none;">
+                <span>📄 Download Card (PDF)</span>
+            </a>
+            {% if not _is_owner %}
+            <button type="button" class="button" id="{{ _vid }}_addBtn">
+                <span>+ Add Vaccine</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if _is_owner %}
+    <p class="muted" style="font-size:0.85rem;margin-top:0.5rem;">
+        ℹ️ Vaccination records are managed by our staff. Contact us if you need corrections.
+    </p>
+    {% endif %}
+
+    <div id="{{ _vid }}_tableContainer" style="margin-top:1.5rem;">
+        <table class="data-table" id="{{ _vid }}_table" style="width:100%;display:none;">
+            <thead>
+                <tr>
+                    <th>Vaccine Name</th>
+                    <th>Date Given</th>
+                    <th>Next Due</th>
+                    <th>Veterinarian</th>
+                    <th>Notes</th>
+                    <th>Added By</th>
+                    {% if not _is_owner %}<th>Actions</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody id="{{ _vid }}_tbody"></tbody>
+        </table>
+
+        <div id="{{ _vid }}_noMsg" class="muted" style="padding:2rem;text-align:center;display:none;">
+            <p>💉 No vaccination records yet.{% if not _is_owner %} Click "+ Add Vaccine" to get started.{% endif %}</p>
+        </div>
+
+        <div id="{{ _vid }}_loading" class="muted" style="padding:2rem;text-align:center;">
+            <p>Loading vaccination records...</p>
+        </div>
+    </div>
+</div>
+
+{% if not _is_owner %}
+<div id="{{ _vid }}_modal" class="modal" style="display:none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" style="max-width:600px;">
+        <div class="modal-header">
+            <h3 id="{{ _vid }}_modalTitle">Add Vaccination Record</h3>
+            <button type="button" class="modal-close" onclick="closeVaxModal('{{ _vid }}')">&times;</button>
+        </div>
+        <form id="{{ _vid }}_form" class="stack" style="padding:1.5rem;">
+            <input type="hidden" id="{{ _vid }}_vaxId" value="">
+            <label>
+                <span>Vaccine Name <span class="required">*</span></span>
+                <input type="text" id="{{ _vid }}_vaxName" required
+                       placeholder="e.g., Rabies, DHPP, FVRCP, Bordetella">
+            </label>
+            <div class="grid-two">
+                <label>
+                    <span>Date Administered</span>
+                    <input type="date" id="{{ _vid }}_dateAdm">
+                </label>
+                <label>
+                    <span>Next Due Date</span>
+                    <input type="date" id="{{ _vid }}_nextDue">
+                </label>
+            </div>
+            <label>
+                <span>Veterinarian/Clinic</span>
+                <input type="text" id="{{ _vid }}_vet" placeholder="e.g., Animal Health Clinic">
+            </label>
+            <label>
+                <span>Notes</span>
+                <textarea id="{{ _vid }}_notes" rows="3"
+                          placeholder="Additional information about this vaccination..."></textarea>
+            </label>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button type="button" class="button" style="background:#999;"
+                        onclick="closeVaxModal('{{ _vid }}')">Cancel</button>
+                <button type="submit" class="button">
+                    <span>Save Vaccination</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.vaccination-manager{margin-top:2rem;padding-top:2rem;border-top:2px solid var(--border);}
+.data-table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);}
+.data-table thead{background:var(--primary);color:#fff;}
+.data-table th{padding:12px;text-align:left;font-weight:600;font-size:.9rem;}
+.data-table td{padding:12px;border-bottom:1px solid var(--border);}
+.data-table tbody tr:hover{background:#f5f5f5;}
+.data-table tbody tr:last-child td{border-bottom:none;}
+.vaccine-status{display:inline-block;padding:3px 8px;border-radius:12px;font-size:.8rem;font-weight:600;}
+.vaccine-status.overdue{background:#ffebee;color:#c62828;}
+.vaccine-status.due-soon{background:#fff3e0;color:#e65100;}
+.vaccine-status.current{background:#e8f5e9;color:#2e7d32;}
+.vaccine-actions{display:flex;gap:8px;}
+.vaccine-actions button{padding:5px 10px;font-size:.85rem;border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.btn-edit{background:#2196F3;color:#fff;}
+.btn-edit:hover{background:#1976D2;}
+.btn-delete{background:#f44336;color:#fff;}
+.btn-delete:hover{background:#d32f2f;}
+</style>
+
+<script>
+(function(){
+    const vid = '{{ _vid }}';
+    const petId = {{ pet.id }};
+    const isOwner = {{ 'true' if _is_owner else 'false' }};
+    let vaccinations = [];
+
+    function el(suffix){ return document.getElementById(vid + suffix); }
+
+    function loadVaccinations(){
+        fetch('/owner/api/pet/' + petId + '/vaccinations')
+            .then(r => r.json())
+            .then(data => {
+                if(data.success){
+                    vaccinations = data.vaccinations;
+                    renderTable();
+                } else { showVaxError(data.error || 'Failed to load vaccinations'); }
+            })
+            .catch(() => showVaxError('Failed to load vaccinations'));
+    }
+
+    function renderTable(){
+        el('_loading').style.display = 'none';
+        if(vaccinations.length === 0){
+            el('_table').style.display = 'none';
+            el('_noMsg').style.display = 'block';
+            return;
+        }
+        el('_noMsg').style.display = 'none';
+        el('_table').style.display = 'table';
+        el('_tbody').innerHTML = vaccinations.map(vax => {
+            const dateGiven = vax.date_administered ? fmtDate(vax.date_administered) : 'N/A';
+            const nextDue   = vax.next_due_date     ? fmtDate(vax.next_due_date)     : 'N/A';
+            const status    = vaccineStatus(vax.next_due_date);
+            const addedBy   = esc(vax.created_by_name || '-');
+            const actionsCol = isOwner ? '' :
+                '<td><div class="vaccine-actions">' +
+                '<button class="btn-edit" onclick="editVax_' + vid + '(' + vax.id + ')">✏️ Edit</button>' +
+                '<button class="btn-delete" onclick="delVax_' + vid + '(' + vax.id + ',\'' + esc(vax.vaccine_name) + '\')">🗑️ Delete</button>' +
+                '</div></td>';
+            return '<tr>' +
+                '<td><strong>' + esc(vax.vaccine_name) + '</strong></td>' +
+                '<td>' + dateGiven + '</td>' +
+                '<td>' + nextDue + (status ? '<br><span class="vaccine-status ' + status.cls + '">' + status.txt + '</span>' : '') + '</td>' +
+                '<td>' + esc(vax.vet_name || 'N/A') + '</td>' +
+                '<td>' + esc(vax.notes || '-') + '</td>' +
+                '<td>' + addedBy + '</td>' +
+                actionsCol +
+                '</tr>';
+        }).join('');
+    }
+
+    function vaccineStatus(d){
+        if(!d) return null;
+        const diff = Math.ceil((new Date(d) - new Date()) / 86400000);
+        if(diff < 0)  return {cls:'overdue',  txt:'⚠️ Overdue'};
+        if(diff < 30) return {cls:'due-soon', txt:'⏰ Due soon'};
+        return {cls:'current', txt:'? Current'};
+    }
+
+    function fmtDate(s){
+        return new Date(s).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+    }
+
+    function esc(t){
+        if(!t) return '';
+        const d = document.createElement('div');
+        d.textContent = String(t);
+        return d.innerHTML;
+    }
+
+    function showVaxError(msg){
+        if(window.showFlashMessage) window.showFlashMessage(msg,'error');
+        else console.error('Vax error:', msg);
+    }
+
+    function showVaxSuccess(msg){
+        if(window.showFlashMessage) window.showFlashMessage(msg,'success');
+    }
+
+    if(!isOwner){
+        window['openAddVax_'+vid] = function(){
+            el('_modalTitle').textContent = 'Add Vaccination Record';
+            el('_form').reset();
+            el('_vaxId').value = '';
+            el('_modal').style.display = 'block';
+        };
+
+        window['editVax_'+vid] = function(vaxId){
+            const vax = vaccinations.find(v => v.id === vaxId);
+            if(!vax) return;
+            el('_modalTitle').textContent = 'Edit Vaccination Record';
+            el('_vaxId').value = vax.id;
+            el('_vaxName').value = vax.vaccine_name;
+            el('_dateAdm').value = vax.date_administered || '';
+            el('_nextDue').value = vax.next_due_date || '';
+            el('_vet').value    = vax.vet_name || '';
+            el('_notes').value  = vax.notes || '';
+            el('_modal').style.display = 'block';
+        };
+
+        window['delVax_'+vid] = function(vaxId, vaccineName){
+            if(!confirm('Delete the "' + vaccineName + '" vaccination record?')) return;
+            fetch('/owner/api/pet/vaccinations/' + vaxId + '/delete', {method:'POST'})
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success){ loadVaccinations(); showVaxSuccess(data.message); }
+                    else showVaxError(data.error || 'Failed to delete');
+                })
+                .catch(() => showVaxError('Failed to delete vaccination'));
+        };
+
+        const addBtn = el('_addBtn');
+        if(addBtn) addBtn.addEventListener('click', window['openAddVax_'+vid]);
+
+        const form = el('_form');
+        if(form) form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const vaxId  = el('_vaxId').value;
+            const isEdit = vaxId !== '';
+            const fd = new FormData();
+            fd.append('vaccine_name',     el('_vaxName').value);
+            fd.append('date_administered',el('_dateAdm').value);
+            fd.append('next_due_date',    el('_nextDue').value);
+            fd.append('vet_name',         el('_vet').value);
+            fd.append('notes',            el('_notes').value);
+            const url = isEdit
+                ? '/owner/api/pet/vaccinations/' + vaxId + '/update'
+                : '/owner/api/pet/' + petId + '/vaccinations/add';
+            fetch(url, {method:'POST', body:fd})
+                .then(r => r.json())
+                .then(data => {
+                    if(data.success){
+                        closeVaxModal(vid);
+                        loadVaccinations();
+                        showVaxSuccess(data.message);
+                    } else showVaxError(data.error || 'Failed to save vaccination');
+                })
+                .catch(() => showVaxError('Failed to save vaccination'));
+        });
+    }
+
+    window.closeVaxModal = function(v){
+        const m = document.getElementById(v + '_modal');
+        if(m) m.style.display = 'none';
+    };
+
+    if(document.readyState === 'loading'){
+        document.addEventListener('DOMContentLoaded', loadVaccinations);
+    } else {
+        loadVaccinations();
+    }
+})();
+</script>

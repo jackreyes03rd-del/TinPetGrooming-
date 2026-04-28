@@ -1,0 +1,53 @@
+{% if pet.recommended_shampoo or pet.emotional_condition or pet.handling_readiness or pet.latest_nutrition_log or pet.latest_behavior_log or pet.latest_product_recommendation or pet.latest_handling_assessment %}
+<div class="panel panel-inset stack-sm health-profile-summary">
+  <div class="flag-row">
+    {% if pet.recommended_shampoo %}<span class="meta-chip">Shampoo: {{ pet.recommended_shampoo }}</span>{% endif %}
+    {% if pet.emotional_condition %}<span class="meta-chip">Emotion: {{ pet.emotional_condition|replace('_', ' ')|title }}</span>{% endif %}
+    {% if pet.handling_readiness %}<span class="meta-chip">Handling: {{ pet.handling_readiness|replace('_', ' ')|title }}</span>{% endif %}
+    {% if pet.diet_stage %}<span class="meta-chip">Diet stage: {{ pet.diet_stage|replace('_', ' ')|title }}</span>{% endif %}
+  </div>
+  <div class="health-detail-grid">
+    {% if pet.latest_nutrition_log %}
+    <div class="health-detail-card">
+      <strong>Nutrition</strong>
+      <p>
+        {% if pet.latest_nutrition_log.food_brand %}Food: {{ pet.latest_nutrition_log.food_brand }}<br>{% endif %}
+        {% if pet.latest_nutrition_log.recommended_food_type %}Recommended type: {{ pet.latest_nutrition_log.recommended_food_type }}<br>{% endif %}
+        {% if pet.latest_nutrition_log.coat_support_goal %}Coat goal: {{ pet.latest_nutrition_log.coat_support_goal }}{% endif %}
+      </p>
+      {% if pet.latest_nutrition_log.nutrition_notes %}<p>Notes: {{ pet.latest_nutrition_log.nutrition_notes }}</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if pet.latest_behavior_log %}
+    <div class="health-detail-card">
+      <strong>Behavior</strong>
+      <p>
+        Emotion: {{ pet.latest_behavior_log.emotional_condition|replace('_', ' ')|title }}<br>
+        {% if pet.latest_behavior_log.handling_recommendation %}Handling: {{ pet.latest_behavior_log.handling_recommendation|replace('_', ' ')|title }}{% endif %}
+      </p>
+      {% if pet.latest_behavior_log.behavior_notes %}<p>Notes: {{ pet.latest_behavior_log.behavior_notes }}</p>{% endif %}
+    </div>
+    {% endif %}
+    {% if pet.latest_product_recommendation %}
+    <div class="health-detail-card">
+      <strong>Shampoo and Coat</strong>
+      <p>
+        Shampoo: {{ pet.latest_product_recommendation.recommended_shampoo }}<br>
+        Coat: {{ pet.latest_product_recommendation.coat_type|replace('_', ' ')|title }}<br>
+        Skin: {{ pet.latest_product_recommendation.skin_condition|replace('_', ' ')|title }}
+      </p>
+    </div>
+    {% endif %}
+    {% if pet.latest_handling_assessment %}
+    <div class="health-detail-card">
+      <strong>Handling</strong>
+      <p>
+        Readiness: {{ pet.latest_handling_assessment.handling_readiness|replace('_', ' ')|title }}<br>
+        Bath/Dryer: {{ pet.latest_handling_assessment.bath_tolerance|title }} / {{ pet.latest_handling_assessment.dryer_tolerance|title }}
+      </p>
+      {% if pet.latest_handling_assessment.handling_notes %}<p>Notes: {{ pet.latest_handling_assessment.handling_notes }}</p>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

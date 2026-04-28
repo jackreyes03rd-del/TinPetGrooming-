@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% set nav_items = None %}
+
+{% block title %}Application Error{% endblock %}
+
+{% block content %}
+<section class="panel stack narrow-panel">
+  <div>
+    <p class="eyebrow">Startup issue</p>
+    <h2>The application could not connect to MySQL.</h2>
+  </div>
+  <p class="muted">Check the .env database values and confirm MariaDB is running.</p>
+  <pre class="error-box">{{ error_message }}</pre>
+</section>
+{% endblock %}

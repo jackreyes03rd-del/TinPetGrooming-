@@ -1,0 +1,846 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Portal{% endblock %}
+
+{% block content %}
+{% if section == 'dashboard' %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Operations</p>
+    <h2>Control bookings, staff, health records, and reporting.</h2>
+    <p class="hero-copy">Track the live queue, open capacity, and overall shop activity from one dashboard.</p>
+    <div class="hero-pills">
+      <span>{{ metrics.appointments_today }} appointments today</span>
+      <span>{{ metrics.active_clients }} owners</span>
+      <span>{{ metrics.registered_pets }} pets</span>
+      <span>{{ metrics.pending_slots }} open slots</span>
+    </div>
+  </div>
+</section>
+
+<section class="card-grid stat-grid">
+  <article class="stat-card"><span>Today</span><strong>{{ metrics.appointments_today }}</strong><small>Appointments</small></article>
+  <article class="stat-card"><span>Clients</span><strong>{{ metrics.active_clients }}</strong><small>Pet owners</small></article>
+  <article class="stat-card"><span>Pets</span><strong>{{ metrics.registered_pets }}</strong><small>Health profiles</small></article>
+  <article class="stat-card"><span>Capacity</span><strong>{{ metrics.pending_slots }}</strong><small>Open slots</small></article>
+</section>
+
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Queue</p>
+        <h3>Today's appointments</h3>
+      </div>
+    </div>
+    {% for appointment in todays %}
+    <article class="list-row stacked appointment-row-compact">
+      <div>
+        <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+        <p>{{ format_slot(appointment.slot_start) }} | {{ appointment.owner_name }} | {{ appointment.groomer_name }}</p>
+      </div>
+      <span class="status-badge status-{{ appointment.status }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+    </article>
+    {% else %}
+    <p class="muted">No appointments for today.</p>
+    {% endfor %}
+  </article>
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Timeline</p>
+        <h3>Today's flow</h3>
+      </div>
+    </div>
+    {% if timeline_chart_html %}
+    <div class="chart-shell">{{ timeline_chart_html|safe }}</div>
+    {% else %}
+    <p class="muted">No timeline data yet.</p>
+    {% endif %}
+  </article>
+</section>
+{% elif section == 'approvals' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Approvals</p>
+      <h3>Pending bookings</h3>
+    </div>
+  </div>
+  <div class="subtle-note">Review owner bookings before they move into the active schedule.</div>
+  {% for appointment in pending %}
+  <article class="appointment-card stack-sm">
+    <div>
+      <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+      <p>{{ format_slot(appointment.slot_start) }} | {{ appointment.owner_name }} | {{ appointment.groomer_name }}</p>
+      {% if appointment.add_ons %}<p>Add-ons: {{ appointment.add_ons }}</p>{% endif %}
+      {% if appointment.notes %}<p>Notes: {{ appointment.notes }}</p>{% endif %}
+    </div>
+    <div class="action-grid compact-actions">
+      <form method="post" action="{{ url_for('admin.manage_approval', appointment_id=appointment.id, action='approve') }}">
+        <button class="button" type="submit">Approve</button>
+      </form>
+      <form method="post" action="{{ url_for('admin.manage_approval', appointment_id=appointment.id, action='reject') }}">
+        <button class="button button-danger" type="submit">Reject</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <p class="muted">No pending bookings.</p>
+  {% endfor %}
+</section>
+{% elif section == 'staff' %}
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Roster</p>
+        <h3>Current staff</h3>
+      </div>
+    </div>
+    {% for groomer in groomers %}
+    <article class="list-row">
+      <div>
+        <strong>{{ groomer.name }}</strong>
+        <p>{{ groomer.email }} | {{ groomer.phone }}</p>
+        <p>{{ groomer.bio }}</p>
+      </div>
+      <form method="post" action="{{ url_for('admin.remove_staff_member', groomer_id=groomer.id) }}">
+        <button class="button button-danger" type="submit">Remove</button>
+      </form>
+    </article>
+    {% else %}
+    <p class="muted">No staff accounts yet.</p>
+    {% endfor %}
+  </article>
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Create</p>
+        <h3>Add groomer</h3>
+      </div>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('admin.create_staff_member') }}">
+      <label><span>Name</span><input type="text" name="name" required></label>
+      <label><span>Email</span><input type="email" name="email" required></label>
+      <label><span>Phone</span><input type="text" name="phone" required></label>
+      <label><span>Temporary password</span><input type="password" name="password" required></label>
+      <label><span>Bio</span><input type="text" name="bio"></label>
+      <button class="button" type="submit">Create Groomer</button>
+    </form>
+  </article>
+</section>
+{% elif section == 'bookings' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Bookings</p>
+      <h3>Filter and manage</h3>
+    </div>
+  </div>
+  <form class="inline-form wrap" method="get" action="{{ url_for('admin.admin_portal') }}">
+    <input type="hidden" name="section" value="bookings">
+    <input type="date" name="start_date" value="{{ start_date.isoformat() }}">
+    <input type="date" name="end_date" value="{{ end_date.isoformat() }}">
+    <select name="status">
+      {% for value in ['All', 'pending', 'confirmed', 'completed', 'cancelled', 'rescheduled', 'no_show'] %}
+      <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+      {% endfor %}
+    </select>
+    <button class="button" type="submit">Apply</button>
+  </form>
+  {% for appointment in bookings %}
+  <article class="appointment-card stack-sm">
+    <div>
+      <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+      <p>{{ format_slot(appointment.slot_start) }} | {{ appointment.owner_name }} | {{ appointment.groomer_name }}</p>
+      {% if appointment.behavior_alert %}<p>Behavior alert: {{ appointment.behavior_alert }}</p>{% endif %}
+      {% if appointment.recommended_shampoo %}<p>Shampoo: {{ appointment.recommended_shampoo }}</p>{% endif %}
+      <span class="status-badge status-{{ appointment.status }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+    </div>
+    <div class="action-grid compact-actions">
+      <form class="stack panel panel-inset" method="post" action="{{ url_for('admin.update_admin_booking_status', appointment_id=appointment.id) }}">
+        <input type="hidden" name="start_date" value="{{ start_date.isoformat() }}">
+        <input type="hidden" name="end_date" value="{{ end_date.isoformat() }}">
+        <input type="hidden" name="status_filter" value="{{ status_filter }}">
+        <div class="grid-three">
+          <label>
+            <span>Status</span>
+            <select name="status">
+              {% for value in ['pending', 'confirmed', 'completed', 'cancelled', 'rescheduled', 'no_show'] %}
+              <option value="{{ value }}" {% if appointment.status == value %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Handling level</span>
+            <select name="handling_level">
+              <option value="">Select</option>
+              {% for value in ['easy', 'moderate', 'high_support'] %}
+              <option value="{{ value }}" {% if appointment.handling_level == value %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Nutrition flag</span>
+            <input type="text" name="nutrition_flag" value="{{ appointment.nutrition_flag or '' }}" placeholder="Monitor coat-support diet">
+          </label>
+        </div>
+        <div class="grid-two">
+          <label>
+            <span>Behavior alert</span>
+            <input type="text" name="behavior_alert" value="{{ appointment.behavior_alert or '' }}">
+          </label>
+          <label>
+            <span>Recommended shampoo</span>
+            <input type="text" name="recommended_shampoo" value="{{ appointment.recommended_shampoo or '' }}">
+          </label>
+        </div>
+        <label>
+          <span>Preparation notes</span>
+          <textarea name="prep_notes" rows="3">{{ appointment.prep_notes or '' }}</textarea>
+        </label>
+        <button class="button button-secondary" type="submit">Save</button>
+      </form>
+      <form method="post" action="{{ url_for('admin.send_admin_booking_reminder', appointment_id=appointment.id) }}">
+        <input type="hidden" name="start_date" value="{{ start_date.isoformat() }}">
+        <input type="hidden" name="end_date" value="{{ end_date.isoformat() }}">
+        <input type="hidden" name="status_filter" value="{{ status_filter }}">
+        <button class="button" type="submit">Send Reminder</button>
+      </form>
+    </div>
+  </article>
+  {% else %}
+  <p class="muted">No appointments in this range.</p>
+  {% endfor %}
+</section>
+{% elif section == 'health' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Health records</p>
+      <h3>Search pets</h3>
+    </div>
+  </div>
+  <form class="inline-form" method="get" action="{{ url_for('admin.admin_portal') }}">
+    <input type="hidden" name="section" value="health">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search by pet, breed, species, or owner">
+    <button class="button" type="submit">Search</button>
+  </form>
+  {% for record in records %}
+  {% set show_owner_phone = true %}
+  {% include '_health_record_card.html' %}
+  {% else %}
+  <p class="muted">No matching records.</p>
+  {% endfor %}
+</section>
+
+{% elif section == 'owners' %}
+{% if selected_owner_data %}
+  
+  <section class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Owner Details</p>
+        <h3>{{ selected_owner_data.name }}</h3>
+      </div>
+      <a href="{{ url_for('admin.admin_portal', section='owners') }}" class="button button-secondary">← Back to All Owners</a>
+    </div>
+    
+    
+    <article class="panel stack" style="background: #f9f9f9; padding: 1.5rem; border-radius: 8px;">
+      <div class="grid-two">
+        <div>
+          <p><strong>Email:</strong> {{ selected_owner_data.email }}</p>
+          <p><strong>Phone:</strong> {{ selected_owner_data.phone or 'Not provided' }}</p>
+        </div>
+        <div>
+          <p><strong>Member Since:</strong> {{ selected_owner_data.created_at.strftime('%B %d, %Y') if selected_owner_data.created_at else 'N/A' }}</p>
+          <p><strong>Total Pets:</strong> {{ selected_owner_data.pets|length }}</p>
+        </div>
+      </div>
+      
+      
+      <div style="display: flex; gap: 10px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+        <button type="button" class="button button-secondary" onclick="document.getElementById('editOwnerModal').style.display='block'">Edit Info</button>
+        <button type="button" class="button" onclick="if(confirm('Reset password for this owner?')) document.getElementById('resetPasswordForm').submit()">Reset Password</button>
+      </div>
+      
+      
+      <form id="resetPasswordForm" method="post" action="{{ url_for('admin.admin_reset_owner_password', owner_id=selected_owner_data.id) }}" style="display: none;">
+      </form>
+    </article>
+    
+    
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Registered Pets</p>
+        <h3>{{ selected_owner_data.pets|length }} Pet(s)</h3>
+      </div>
+    </div>
+    
+    {% for pet in selected_owner_data.pets %}
+    <article class="panel stack" style="border-left: 4px solid {% if pet.allergies or pet.medical_history %}#ff9800{% else %}#4CAF50{% endif %};">
+      <div class="grid-two">
+        <div>
+          <h4>{{ pet.name }}</h4>
+          <p><strong>Species:</strong> {{ pet.species }} | <strong>Breed:</strong> {{ pet.breed }}</p>
+          <p><strong>Age:</strong> {{ pet.age }} years | <strong>Weight:</strong> {{ pet.weight }} kg</p>
+        </div>
+        <div>
+          {% if pet.allergies %}
+          <div style="background: #fff3e0; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+            <strong style="color: #e65100;">⚠️ Allergies:</strong> {{ pet.allergies }}
+          </div>
+          {% endif %}
+          {% if pet.medications %}
+          <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+            <strong style="color: #1976d2;">💊 Medications:</strong> {{ pet.medications }}
+          </div>
+          {% endif %}
+          {% if pet.medical_history %}
+          <div style="background: #f3e5f5; padding: 8px; border-radius: 4px;">
+            <strong style="color: #7b1fa2;">🏥 Medical History:</strong> {{ pet.medical_history }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+
+      {% include '_pet_vaccination_manager.html' %}
+    </article>
+    {% else %}
+    <p class="muted">No pets registered yet.</p>
+    {% endfor %}
+    
+    
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Staff Notes</p>
+        <h3>Communication History</h3>
+      </div>
+    </div>
+    
+    {% for note in owner_notes_data %}
+    <article class="panel stack-sm" style="background: #fffde7; border-left: 3px solid #FFC107;">
+      <p><strong>{{ note.staff_name }}</strong> <span class="muted">{{ note.created_at.strftime('%b %d, %Y at %I:%M %p') if note.created_at else '' }}</span></p>
+      <p>{{ note.note }}</p>
+    </article>
+    {% else %}
+    <p class="muted">No staff notes yet.</p>
+    {% endfor %}
+    
+    
+    <form class="stack" method="post" action="{{ url_for('admin.add_owner_note', owner_id=selected_owner_data.id) }}" style="margin-top: 1rem;">
+      <label>
+        <span>Add a note about this owner</span>
+        <textarea name="note" rows="3" placeholder="E.g., Prefers morning appointments, follows up regularly, etc." required></textarea>
+      </label>
+      <button type="submit" class="button">Add Note</button>
+    </form>
+    
+    
+    {% if owner_appointments_data %}
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Appointment History</p>
+        <h3>{{ owner_appointments_data|length }} Booking(s)</h3>
+      </div>
+    </div>
+    
+    {% for appt in owner_appointments_data[:10] %}
+    <article class="list-row stacked">
+      <div>
+        <strong>{{ appt.pet_name }} | {{ appt.service_name }}</strong>
+        <p>{{ appt.slot_start.strftime('%b %d, %Y at %I:%M %p') if appt.slot_start else 'N/A' }} | Groomer: {{ appt.groomer_name }}</p>
+      </div>
+      <span class="status-badge status-{{ appt.status }}">{{ appt.status|replace('_', ' ')|title }}</span>
+    </article>
+    {% endfor %}
+    {% endif %}
+  </section>
+  
+  
+  <div id="editOwnerModal" class="modal" style="display: none;">
+    <div class="modal-backdrop" onclick="document.getElementById('editOwnerModal').style.display='none'"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Owner Information</h3>
+        <button type="button" class="modal-close" onclick="document.getElementById('editOwnerModal').style.display='none'">&times;</button>
+      </div>
+      <form class="stack" method="post" action="{{ url_for('admin.admin_edit_owner', owner_id=selected_owner_data.id) }}" style="padding: 1.5rem;">
+        <label>
+          <span>Full Name</span>
+          <input type="text" name="name" value="{{ selected_owner_data.name }}" required>
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" name="email" value="{{ selected_owner_data.email }}" required>
+        </label>
+        <label>
+          <span>Phone Number</span>
+          <input type="text" name="phone" value="{{ selected_owner_data.phone or '' }}">
+        </label>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="button button-secondary" onclick="document.getElementById('editOwnerModal').style.display='none'">Cancel</button>
+          <button type="submit" class="button">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+{% else %}
+  
+  <section class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Owner Management</p>
+        <h3>All Registered Pet Owners</h3>
+      </div>
+    </div>
+    
+    
+    <form class="inline-form" method="get" action="{{ url_for('admin.admin_portal') }}" style="margin-bottom: 1.5rem;">
+      <input type="hidden" name="section" value="owners">
+      <input type="text" name="owner_search" value="{{ request.args.get('owner_search', '') }}" placeholder="Search by name, email, or phone">
+      <select name="has_pets_filter">
+        <option value="all" {% if request.args.get('has_pets_filter') == 'all' %}selected{% endif %}>All Owners</option>
+        <option value="with_pets" {% if request.args.get('has_pets_filter') == 'with_pets' %}selected{% endif %}>Has Pets</option>
+        <option value="no_pets" {% if request.args.get('has_pets_filter') == 'no_pets' %}selected{% endif %}>No Pets Yet</option>
+      </select>
+      <button class="button" type="submit">Search</button>
+    </form>
+    
+    
+    {% if owner_list_data and owner_list_data.owners %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Pets</th>
+          <th>Registered</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for owner in owner_list_data.owners %}
+        <tr>
+          <td><strong>{{ owner.name }}</strong></td>
+          <td>{{ owner.email }}</td>
+          <td>{{ owner.phone or 'N/A' }}</td>
+          <td>
+            <span class="pill-count" style="background: {% if owner.pet_count > 0 %}#4CAF50{% else %}#999{% endif %};">
+              {{ owner.pet_count }}
+            </span>
+          </td>
+          <td>{{ owner.created_at.strftime('%b %d, %Y') if owner.created_at else 'N/A' }}</td>
+          <td>
+            <a href="{{ url_for('admin.admin_portal', section='owners', owner_id=owner.id) }}" class="button button-secondary" style="font-size: 0.9rem; padding: 5px 10px;">View Details</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+    
+    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd; color: #666;">
+      Showing {{ owner_list_data.owners|length }} of {{ owner_list_data.total }} owner(s)
+    </div>
+    {% else %}
+    <p class="muted">No owners found matching your search criteria.</p>
+    {% endif %}
+  </section>
+{% endif %}
+
+{% elif section == 'slots' %}
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Generate</p>
+        <h3>Create availability</h3>
+      </div>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('admin.generate_slots') }}">
+      <label>
+        <span>Groomer</span>
+        <select name="groomer_id" required>
+          {% for groomer in groomers %}
+          <option value="{{ groomer.id }}" {% if selected_groomer_id == groomer.id %}selected{% endif %}>{{ groomer.name }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Date</span>
+        <input type="date" name="slot_date" value="{{ slot_date.isoformat() }}" required>
+      </label>
+      <div class="grid-three">
+        <label><span>Start hour</span><input type="number" name="start_hour" min="0" max="23" value="9"></label>
+        <label><span>End hour</span><input type="number" name="end_hour" min="1" max="23" value="17"></label>
+        <label>
+          <span>Interval</span>
+          <select name="interval">
+            <option value="30">30</option>
+            <option value="60" selected>60</option>
+          </select>
+        </label>
+      </div>
+      <button class="button" type="submit">Generate Slots</button>
+    </form>
+  </article>
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Preview</p>
+        <h3>Current slots</h3>
+      </div>
+    </div>
+    <div class="slot-grid static-grid">
+      {% for slot in slot_preview %}
+      <div class="slot-pill {% if slot.status == 'available' %}slot-open{% else %}slot-busy{% endif %}">{{ slot.slot_start.strftime('%I:%M %p') }}</div>
+      {% else %}
+      <p class="muted">No slots for this selection.</p>
+      {% endfor %}
+    </div>
+  </article>
+</section>
+{% elif section == 'analytics' %}
+{% set booked_total = analytics_data["popular_services"]|sum(attribute="total") %}
+{% set top_service = analytics_data["popular_services"]|first if analytics_data["popular_services"] else None %}
+{% set peak_hour = analytics_data["peak_hours"]|max(attribute="total") if analytics_data["peak_hours"] else None %}
+{% set busiest_day = analytics_data["busiest_days"]|max(attribute="total") if analytics_data["busiest_days"] else None %}
+{% set top_keyword = ai_data["keyword_counts"]|first if ai_data["keyword_counts"] else None %}
+{% set top_topic = ai_data["topic_counts"]|first if ai_data["topic_counts"] else None %}
+{% set latest_rating = analytics_data["satisfaction"]|last if analytics_data["satisfaction"] else None %}
+<section class="analytics-hero">
+  <div class="analytics-hero-copy">
+    <p class="eyebrow">Analytics</p>
+    <h2>Turn bookings, ratings, and AI questions into clear operating signals.</h2>
+    <p class="hero-copy">This view highlights what customers book most, when demand spikes, what health concerns come up often, and how service satisfaction is shifting over time.</p>
+    <div class="hero-pills analytics-pills">
+      <span>{{ booked_total }} bookings in range</span>
+      <span>{{ ai_data.total_questions }} AI questions logged</span>
+      <span>{{ analytics_data["satisfaction"]|length }} rating checkpoints</span>
+    </div>
+  </div>
+  <article class="analytics-filter-card">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Window</p>
+        <h3>Review period</h3>
+      </div>
+    </div>
+    <form class="stack" method="get" action="{{ url_for('admin.admin_portal') }}">
+      <input type="hidden" name="section" value="analytics">
+      <label><span>Start date</span><input type="date" name="start_date" value="{{ start_date.isoformat() }}"></label>
+      <label><span>End date</span><input type="date" name="end_date" value="{{ end_date.isoformat() }}"></label>
+      <button class="button" type="submit">Refresh Insights</button>
+    </form>
+  </article>
+</section>
+
+<section class="analytics-summary-grid">
+  <article class="analytics-stat-card analytics-stat-primary">
+    <span class="analytics-stat-icon">✂️</span>
+    <div>
+      <small>Top service</small>
+      <strong>{{ top_service.service_name if top_service else 'No data' }}</strong>
+      <p>{{ top_service.total if top_service else 0 }} bookings</p>
+    </div>
+  </article>
+  <article class="analytics-stat-card">
+    <span class="analytics-stat-icon">⏰</span>
+    <div>
+      <small>Peak hour</small>
+      <strong>{% if peak_hour %}{{ peak_hour.hour_bucket }}:00{% else %}No data{% endif %}</strong>
+      <p>{% if peak_hour %}{{ peak_hour.total }} appointments{% else %}No booking pressure detected{% endif %}</p>
+    </div>
+  </article>
+  <article class="analytics-stat-card">
+    <span class="analytics-stat-icon">⭐</span>
+    <div>
+      <small>Latest rating trend</small>
+      <strong>{% if latest_rating %}{{ latest_rating.avg }} / 5{% else %}No ratings{% endif %}</strong>
+      <p>{% if latest_rating %}Captured on {{ latest_rating.day_label }}{% else %}Waiting for rated appointments{% endif %}</p>
+    </div>
+  </article>
+  <article class="analytics-stat-card">
+    <span class="analytics-stat-icon">🤖</span>
+    <div>
+      <small>Top AI topic</small>
+      <strong>{{ top_topic.topic if top_topic else 'No data' }}</strong>
+      <p>{% if top_topic %}{{ top_topic.count }} repeated questions{% else %}No chatbot activity yet{% endif %}</p>
+    </div>
+  </article>
+</section>
+
+<section class="analytics-spotlight-grid">
+  <article class="panel stack analytics-panel analytics-panel-feature">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">Bookings</p>
+        <h3>Popular services</h3>
+      </div>
+      <span class="meta-chip">Demand mix</span>
+    </div>
+    {% if popular_services_chart %}<div class="chart-shell analytics-chart-shell analytics-chart-tall">{{ popular_services_chart|safe }}</div>{% else %}<p class="muted">No data.</p>{% endif %}
+  </article>
+  <article class="panel stack analytics-panel analytics-panel-feature analytics-panel-accent">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">Traffic</p>
+        <h3>Peak hours</h3>
+      </div>
+      <span class="meta-chip">Busy windows</span>
+    </div>
+    {% if peak_hours_chart %}<div class="chart-shell analytics-chart-shell analytics-chart-tall">{{ peak_hours_chart|safe }}</div>{% else %}<p class="muted">No data.</p>{% endif %}
+  </article>
+  <article class="panel stack analytics-panel">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">Patterns</p>
+        <h3>Busiest days</h3>
+      </div>
+      <span class="meta-chip">Weekly rhythm</span>
+    </div>
+    {% if busiest_days_chart %}<div class="chart-shell analytics-chart-shell">{{ busiest_days_chart|safe }}</div>{% else %}<p class="muted">No data.</p>{% endif %}
+  </article>
+  <article class="panel stack analytics-panel">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">Satisfaction</p>
+        <h3>Ratings trend</h3>
+      </div>
+      <span class="meta-chip">Service quality</span>
+    </div>
+    {% if satisfaction_chart %}<div class="chart-shell analytics-chart-shell">{{ satisfaction_chart|safe }}</div>{% else %}<p class="muted">No ratings yet.</p>{% endif %}
+  </article>
+  <article class="panel stack analytics-panel">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">AI</p>
+        <h3>Health keywords</h3>
+      </div>
+      <span class="meta-chip">Concern map</span>
+    </div>
+    {% if keyword_chart %}<div class="chart-shell analytics-chart-shell">{{ keyword_chart|safe }}</div>{% else %}<p class="muted">No keyword data.</p>{% endif %}
+  </article>
+  <article class="panel stack analytics-panel">
+    <div class="analytics-panel-head">
+      <div>
+        <p class="eyebrow">AI</p>
+        <h3>Topics</h3>
+      </div>
+      <span class="meta-chip">Conversation demand</span>
+    </div>
+    {% if topic_chart %}<div class="chart-shell analytics-chart-shell">{{ topic_chart|safe }}</div>{% else %}<p class="muted">No topic data.</p>{% endif %}
+  </article>
+</section>
+
+<section class="analytics-insight-grid">
+  <article class="analytics-insight-card">
+    <span class="analytics-insight-label">Most requested service</span>
+    <strong>{{ top_service.service_name if top_service else 'No service data yet' }}</strong>
+    <p>{% if top_service %}Booked {{ top_service.total }} times in the selected period.{% else %}Bookings will appear here once the range has appointment history.{% endif %}</p>
+  </article>
+  <article class="analytics-insight-card">
+    <span class="analytics-insight-label">Busiest day</span>
+    <strong>{{ busiest_day.day_name if busiest_day else 'No day pattern yet' }}</strong>
+    <p>{% if busiest_day %}Handled {{ busiest_day.total }} appointments on the busiest weekday.{% else %}Expand the date range to surface stronger weekly trends.{% endif %}</p>
+  </article>
+  <article class="analytics-insight-card">
+    <span class="analytics-insight-label">Top keyword</span>
+    <strong>{{ top_keyword.keyword|title if top_keyword else 'No keyword trend yet' }}</strong>
+    <p>{% if top_keyword %}Mentioned {{ top_keyword.count }} times across recent AI questions.{% else %}Keyword tracking appears after chatbot conversations are logged.{% endif %}</p>
+  </article>
+</section>
+
+<section class="panel stack analytics-panel">
+  <div class="analytics-panel-head">
+    <div>
+      <p class="eyebrow">Recent AI questions</p>
+      <h3>Conversation log</h3>
+    </div>
+    <span class="meta-chip">{{ ai_data.total_questions }} total prompts</span>
+  </div>
+  <div class="analytics-log-list">
+    {% for question in ai_data.recent_questions %}
+    <article class="analytics-log-item">
+      <div class="analytics-log-badge">💬</div>
+      <div class="analytics-log-copy">
+        <strong>{{ question.question }}</strong>
+        <p>{{ question.topic }} | {{ question.timestamp }}</p>
+      </div>
+    </article>
+    {% else %}
+    <p class="muted">No questions logged yet.</p>
+    {% endfor %}
+  </div>
+</section>
+{% elif section == 'sms' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Test SMS</p>
+      <h3>Send test message</h3>
+    </div>
+  </div>
+  <div class="subtle-note">Send a test SMS to verify your configuration is working. Results will show below.</div>
+  <form class="stack" method="post" action="{{ url_for('admin.send_test_sms_direct') }}">
+    <div class="grid-two">
+      <label>
+        <span>Phone Number</span>
+        <input type="tel" name="test_phone" placeholder="+639XXXXXXXXX" required>
+        <small>Include country code (e.g., +639123456789)</small>
+      </label>
+      <label>
+        <span>Test Message</span>
+        <input type="text" name="test_message" value="Test SMS from Tin Pet Grooming" required>
+      </label>
+    </div>
+    <button class="button button-secondary" type="submit">📱 Send Test SMS</button>
+  </form>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">SMS campaigns</p>
+      <h3>Send promotion</h3>
+    </div>
+  </div>
+  <form class="stack" method="post" action="{{ url_for('admin.send_sms_campaign') }}">
+    <fieldset class="checkbox-grid">
+      <legend>Recipients</legend>
+      {% for owner in owners %}
+      <label class="check-pill"><input type="checkbox" name="owner_ids" value="{{ owner.id }}" checked> <span>{{ owner.name }}</span></label>
+      {% endfor %}
+    </fieldset>
+    <label>
+      <span>Message</span>
+      <textarea name="message" rows="4">Get 10% off weekday grooming this week at Tin Pet Grooming.</textarea>
+    </label>
+    <button class="button" type="submit">Send Campaign</button>
+  </form>
+</section>
+{% elif section == 'settings' %}
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Hours</p>
+        <h3>Working schedule</h3>
+      </div>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('admin.save_working_hours') }}">
+      <div class="grid-two">
+        <label><span>Open</span><input type="number" name="open_hour" min="0" max="23" value="9"></label>
+        <label><span>Close</span><input type="number" name="close_hour" min="1" max="23" value="17"></label>
+      </div>
+      <button class="button" type="submit">Save Hours</button>
+    </form>
+  </article>
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Demo</p>
+        <h3>Seed data</h3>
+      </div>
+    </div>
+    <form method="post" action="{{ url_for('admin.reseed_demo_data') }}">
+      <button class="button button-secondary" type="submit">Re-seed Demo Data</button>
+    </form>
+  </article>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">SMS Configuration</p>
+      <h3>Android SMS Gateway settings</h3>
+    </div>
+  </div>
+  <div class="subtle-note">📱 Uses your Android phone to send SMS. Make sure the Android SMS Gateway app is installed and running on your phone.</div>
+  <form class="stack" method="post" action="{{ url_for('admin.save_sms_config') }}">
+    <div class="grid-two">
+      <label>
+        <span>Username</span>
+        <input type="text" name="sms_username" value="{{ current_sms_config.username }}" placeholder="Your username" required>
+        <small>From the Android SMS Gateway app</small>
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" name="sms_password" value="{{ current_sms_config.password }}" placeholder="Your password">
+        <small>Leave blank to keep current password</small>
+      </label>
+    </div>
+    
+    <div class="action-grid">
+      <button class="button" type="submit">Save Configuration</button>
+      <button class="button button-secondary" type="button" onclick="testSmsConnection()">Test Connection</button>
+    </div>
+  </form>
+  
+  <div id="smsTestResult" style="display: none; margin-top: 1rem;"></div>
+</section>
+
+<script>
+  function testSmsConnection() {
+    const username = document.querySelector('input[name="sms_username"]').value;
+    const password = document.querySelector('input[name="sms_password"]').value;
+    
+    if (!username || !password) {
+      alert('Please enter both username and password');
+      return;
+    }
+    
+    const resultDiv = document.getElementById('smsTestResult');
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = '<p class="muted">Testing connection...</p>';
+    
+    fetch('{{ url_for("admin.test_sms_config") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        sms_username: username,
+        sms_password: password
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        resultDiv.innerHTML = '<div class="flash flash-success">' + data.message + '</div>';
+      } else {
+        resultDiv.innerHTML = '<div class="flash flash-error">' + data.message + '</div>';
+      }
+    })
+    .catch(error => {
+      resultDiv.innerHTML = '<div class="flash flash-error">Connection test failed: ' + error + '</div>';
+    });
+  }
+</script>
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Services</p>
+      <h3>Current reference pricing</h3>
+    </div>
+  </div>
+  {% for name, info in service_details.items() %}
+  <article class="list-row stacked">
+    <div>
+      <strong>{{ name }}</strong>
+      <p>{{ info.duration }} | {{ info.price }}</p>
+      <p>{{ info.desc }}</p>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% else %}
+
+{% endif %}
+{% endblock %}

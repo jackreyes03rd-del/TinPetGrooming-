@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaccination Card - {{ pet.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            font-size: 12pt;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+        
+        .card-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            border: 3px solid #4CAF50;
+            border-radius: 15px;
+            background: linear-gradient(to bottom, #f8fff8 0%, #ffffff 100%);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .logo-section {
+            margin-bottom: 10px;
+        }
+        
+        .logo {
+            font-size: 28pt;
+            font-weight: bold;
+            color: #2E7D32;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .paw-icon {
+            display: inline-block;
+            font-size: 32pt;
+            color: #4CAF50;
+            margin-right: 10px;
+        }
+        
+        .subtitle {
+            font-size: 16pt;
+            color: #666;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+        
+        .document-title {
+            font-size: 20pt;
+            color: #2E7D32;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        
+        .pet-info-section {
+            background: #fff;
+            border: 2px solid #E0E0E0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .pet-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #E0E0E0;
+        }
+        
+        .pet-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4CAF50 0%, #81C784 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48pt;
+            color: white;
+            margin-right: 20px;
+        }
+        
+        .pet-name-section {
+            flex: 1;
+        }
+        
+        .pet-name {
+            font-size: 24pt;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 5px;
+        }
+        
+        .pet-species {
+            font-size: 14pt;
+            color: #666;
+        }
+        
+        .pet-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .detail-item {
+            padding: 10px;
+            background: #F5F5F5;
+            border-radius: 5px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 10pt;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+        }
+        
+        .detail-value {
+            font-size: 12pt;
+            color: #333;
+        }
+        
+        .owner-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #FFF9C4;
+            border-left: 4px solid #FBC02D;
+            border-radius: 3px;
+        }
+        
+        .owner-info strong {
+            color: #F57F17;
+        }
+        
+        .vaccinations-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            font-size: 16pt;
+            font-weight: bold;
+            color: #2E7D32;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4CAF50;
+        }
+        
+        .vaccine-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #fff;
+        }
+        
+        .vaccine-table th {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 11pt;
+        }
+        
+        .vaccine-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #E0E0E0;
+            font-size: 11pt;
+        }
+        
+        .vaccine-table tr:nth-child(even) {
+            background: #F5F5F5;
+        }
+        
+        .vaccine-table tr:hover {
+            background: #E8F5E9;
+        }
+        
+        .no-vaccines {
+            padding: 20px;
+            text-align: center;
+            color: #999;
+            background: #F5F5F5;
+            border-radius: 5px;
+            font-style: italic;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #E0E0E0;
+            text-align: center;
+        }
+        
+        .generated-date {
+            font-size: 10pt;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        
+        .business-info {
+            font-size: 11pt;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        
+        .business-name {
+            font-weight: bold;
+            color: #2E7D32;
+            font-size: 13pt;
+        }
+        
+        .note {
+            margin-top: 15px;
+            padding: 15px;
+            background: #E3F2FD;
+            border-left: 4px solid #2196F3;
+            border-radius: 3px;
+            font-size: 10pt;
+            color: #1565C0;
+        }
+        
+        .note strong {
+            color: #0D47A1;
+        }
+        
+        /* Print-specific styles */
+        @media print {
+            body {
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+            
+            .card-container {
+                border: 3px solid #4CAF50;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        
+        <div class="header">
+            <div class="logo-section">
+                <span class="paw-icon">🐾</span>
+                <div class="logo">Tin Pet Grooming</div>
+            </div>
+            <div class="subtitle">{{ city }}</div>
+            <div class="document-title">Vaccination Health Card</div>
+        </div>
+        
+        
+        <div class="pet-info-section">
+            <div class="pet-header">
+                <div class="pet-photo">
+                    {% if pet.species == 'Dog' %}🐕{% elif pet.species == 'Cat' %}🐈{% else %}🐾{% endif %}
+                </div>
+                <div class="pet-name-section">
+                    <div class="pet-name">{{ pet.name }}</div>
+                    <div class="pet-species">{{ pet.species }} • {{ pet.breed }}</div>
+                </div>
+            </div>
+            
+            <div class="pet-details">
+                <div class="detail-item">
+                    <div class="detail-label">Age</div>
+                    <div class="detail-value">{{ pet.age }} {% if pet.age == 1 %}year{% else %}years{% endif %}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Weight</div>
+                    <div class="detail-value">{{ "%.1f"|format(pet.weight) }} kg</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Species</div>
+                    <div class="detail-value">{{ pet.species }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Breed</div>
+                    <div class="detail-value">{{ pet.breed }}</div>
+                </div>
+            </div>
+            
+            {% if owner %}
+            <div class="owner-info">
+                <strong>Pet Owner:</strong> {{ owner.name }} • {{ owner.phone }}
+            </div>
+            {% endif %}
+            
+            {% if pet.allergies %}
+            <div class="owner-info" style="background: #FFEBEE; border-left-color: #E53935;">
+                <strong style="color: #C62828;">⚠️ Allergies:</strong> {{ pet.allergies }}
+            </div>
+            {% endif %}
+        </div>
+        
+        
+        <div class="vaccinations-section">
+            <div class="section-title">📋 Vaccination History</div>
+            
+            {% if vaccinations %}
+            <table class="vaccine-table">
+                <thead>
+                    <tr>
+                        <th>Vaccine Name</th>
+                        <th>Date Given</th>
+                        <th>Next Due</th>
+                        <th>Veterinarian</th>
+                        <th>Added By</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vax in vaccinations %}
+                    <tr>
+                        <td><strong>{{ vax.vaccine_name }}</strong>
+                            {% if vax.notes %}<br><small style="color: #666;">{{ vax.notes }}</small>{% endif %}
+                        </td>
+                        <td>{{ vax.date_administered.strftime('%b %d, %Y') if vax.date_administered else 'N/A' }}</td>
+                        <td>
+                            {% if vax.next_due_date %}
+                                {{ vax.next_due_date.strftime('%b %d, %Y') }}
+                                {% set days_until = (vax.next_due_date - today).days if today else None %}
+                                {% if days_until is not none %}
+                                    {% if days_until < 0 %}
+                                        <br><small style="color: #D32F2F;">⚠️ Overdue</small>
+                                    {% elif days_until < 30 %}
+                                        <br><small style="color: #F57C00;">⏰ Due soon</small>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ vax.vet_name or 'N/A' }}</td>
+                        <td>{{ vax.created_by_name or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="no-vaccines">
+                No vaccination records on file. Please add vaccination records to keep your pet's health information up to date.
+            </div>
+            {% endif %}
+        </div>
+        
+        
+        <div class="footer">
+            <div class="generated-date">
+                <strong>Generated on:</strong> {{ generated_date }}
+            </div>
+            
+            <div class="business-info">
+                <div class="business-name">TIN PET GROOMING</div>
+                <div>Calumpang, {{ city }}</div>
+                <div>Professional Pet Grooming & Care Services</div>
+            </div>
+            
+            <div class="note">
+                <strong>📌 Important:</strong> Please present this vaccination card at your grooming appointments. 
+                Keep this record updated and consult your veterinarian for vaccination schedules and preventive care.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

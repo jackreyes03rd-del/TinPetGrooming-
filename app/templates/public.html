@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% set nav_items = None %}
+
+{% block title %}Book faster. Groom smarter.{% endblock %}
+
+{% block content %}
+<section class="public-header">
+  <div class="public-brand">🐾 Tin Pet Grooming</div>
+  <div class="public-tagline">AI-powered booking | {{ city }}</div>
+</section>
+
+<section class="hero">
+  <div>
+    <p class="eyebrow">AI-powered booking</p>
+    <h2>Pet grooming scheduling, health records, SMS, and AI support in one place.</h2>
+    <p class="hero-copy">For Tin Pet Grooming in Calumpang, General Santos City.</p>
+    <div class="hero-pills">
+      <span>Live slot visibility</span>
+      <span>Owner, staff, admin roles</span>
+      <span>SMS confirmations</span>
+      <span>Pet care assistant</span>
+    </div>
+  </div>
+  <div class="hero-card hero-card-public">
+    <h3>Fast, clean, local</h3>
+    <p>Owners book in minutes, staff check health notes before service, and admins manage approvals, slots, campaigns, and analytics from one system.</p>
+    <div class="hero-pills hero-pills-compact">
+      <span>Booking wizard</span>
+      <span>Health profiles</span>
+      <span>SMS workflow</span>
+    </div>
+  </div>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Services</p>
+      <h3>What owners can book</h3>
+    </div>
+  </div>
+  <div class="card-grid services-grid">
+    {% for service in services %}
+    <article class="service-card">
+      <div class="service-topline">
+        <span class="service-icon" aria-hidden="true">{{ service.icon }}</span>
+        <p class="service-price">{{ service.value }}</p>
+      </div>
+      <h4>{{ service.title }}</h4>
+      <p>{{ service.body }}</p>
+      <span class="meta-chip">{{ service.footer }}</span>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Flow</p>
+      <h3>How it works</h3>
+    </div>
+  </div>
+  <div class="card-grid story-grid">
+    <article class="feature-card feature-card-teal">
+      <h4>1. Create your profile</h4>
+      <p>Add pets, health notes, allergies, medications, and vaccination records.</p>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>2. Book in minutes</h4>
+      <p>Choose the pet, service, groomer, and an open slot from the live schedule.</p>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>3. Stay updated</h4>
+      <p>Receive confirmation, reminders, and status changes through SMS and the dashboard.</p>
+    </article>
+  </div>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Highlights</p>
+      <h3>Why owners use it</h3>
+    </div>
+  </div>
+  <div class="card-grid story-grid">
+    <article class="feature-card feature-card-teal">
+      <h4>Health-first profiles</h4>
+      <p>Groomers can check medical notes and allergies before each session.</p>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>Live availability</h4>
+      <p>Open and booked slots are visible immediately, so double booking is avoided.</p>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>Built-in assistant</h4>
+      <p>The AI answers routine grooming and care questions without waiting for staff.</p>
+    </article>
+  </div>
+</section>
+
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Feedback</p>
+      <h3>What owners say</h3>
+    </div>
+  </div>
+  <div class="card-grid story-grid">
+    <article class="feature-card feature-card-teal">
+      <h4>Ella Mendoza</h4>
+      <p>Booking Mochi now takes less than two minutes, and the groomer already sees his skin sensitivity notes.</p>
+      <span class="meta-chip meta-chip-light">Shih Tzu owner</span>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>Paolo Cruz</h4>
+      <p>Live slot visibility removed the back-and-forth and made Luna's schedule much easier.</p>
+      <span class="meta-chip meta-chip-light">Persian cat owner</span>
+    </article>
+    <article class="feature-card feature-card-teal">
+      <h4>Mika Santos</h4>
+      <p>The assistant helped me decide how often my Husky should come in for grooming.</p>
+      <span class="meta-chip meta-chip-light">Husky owner</span>
+    </article>
+  </div>
+</section>
+
+
+
+<footer class="footer-bar">Tin Pet Grooming | {{ city }} | Flask + MySQL</footer>
+
+<div class="modal-backdrop {% if active_auth == 'login' %}is-open{% endif %}" id="loginModal" onclick="closeAuthModal(event, 'login')">
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+    <button class="modal-close" type="button" onclick="closeAuthModal(null, 'login')">×</button>
+    <div class="auth-modal-head">
+      <p class="eyebrow">Access</p>
+      <h3 id="loginTitle">Log in to your account</h3>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('auth.login') }}" id="loginForm">
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" id="loginEmail" required value="{{ request.args.get('email', '') }}">
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" id="loginPassword" required>
+      </label>
+      <button class="button" type="submit">Log In</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal-backdrop {% if active_auth == 'register' %}is-open{% endif %}" id="registerModal" onclick="closeAuthModal(event, 'register')">
+  <div class="auth-modal" role="dialog" aria-modal="true" aria-labelledby="registerTitle">
+    <button class="modal-close" type="button" onclick="closeAuthModal(null, 'register')">×</button>
+    <div class="auth-modal-head">
+      <p class="eyebrow">New owner</p>
+      <h3 id="registerTitle">Create your account</h3>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('auth.register') }}">
+      <label>
+        <span>Full name</span>
+        <input type="text" name="name" required>
+      </label>
+      <label>
+        <span>Email</span>
+        <input type="email" name="email" required>
+      </label>
+      <label>
+        <span>Mobile number</span>
+        <input type="text" name="phone" required>
+      </label>
+      <label>
+        <span>Password</span>
+        <input type="password" name="password" minlength="8" required>
+      </label>
+      <button class="button" type="submit">Register</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openAuthModal(type) {
+    const modal = document.getElementById(type + 'Modal');
+    if (modal) {
+      modal.classList.add('is-open');
+      document.body.classList.add('modal-open');
+    }
+  }
+
+  function closeAuthModal(event, type) {
+    if (event && event.target !== event.currentTarget) {
+      return;
+    }
+    const modal = document.getElementById(type + 'Modal');
+    if (modal) {
+      modal.classList.remove('is-open');
+    }
+    if (!document.querySelector('.modal-backdrop.is-open')) {
+      document.body.classList.remove('modal-open');
+    }
+  }
+
+  if (document.querySelector('.modal-backdrop.is-open')) {
+    document.body.classList.add('modal-open');
+  }
+
+  
+  (function() {
+    const loginModal = document.getElementById('loginModal');
+    const loginPassword = document.getElementById('loginPassword');
+    if (loginModal && loginModal.classList.contains('is-open') && loginPassword) {
+      
+      loginPassword.value = '';
+      loginPassword.focus();
+    }
+  })();
+</script>
+{% endblock %}

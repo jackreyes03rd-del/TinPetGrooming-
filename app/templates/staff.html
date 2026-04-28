@@ -1,0 +1,457 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Portal{% endblock %}
+
+{% block content %}
+{% if section == 'dashboard' %}
+<section class="hero compact">
+  <div>
+    <p class="eyebrow">Staff dashboard</p>
+    <h2>{{ current_user.name.split()[0] }}, here is today's queue.</h2>
+    <p class="hero-copy">Review appointments, update status, and handle walk-ins from one workspace.</p>
+    <div class="hero-pills">
+      <span>{{ confirmed_today }} confirmed</span>
+      <span>{{ today_schedule|length }} total scheduled</span>
+      <span>{{ completed_today }} completed</span>
+    </div>
+  </div>
+</section>
+
+<section class="card-grid stat-grid">
+  <article class="stat-card"><span>Confirmed</span><strong>{{ confirmed_today }}</strong><small>Ready to start</small></article>
+  <article class="stat-card"><span>Queue</span><strong>{{ today_schedule|length }}</strong><small>All appointments today</small></article>
+  <article class="stat-card"><span>Completed</span><strong>{{ completed_today }}</strong><small>Finished sessions</small></article>
+</section>
+
+<section class="grid-two">
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Schedule</p>
+        <h3>Today's appointments</h3>
+      </div>
+    </div>
+    {% for appointment in today_schedule %}
+    <article class="appointment-card appointment-card-timeline stack-sm">
+      <div>
+        <div class="appt-time">{{ appointment.slot_start.strftime('%I:%M %p') }}</div>
+        <strong>{{ appointment.pet_name }} | {{ appointment.service_name }}</strong>
+        <p>{{ appointment.owner_name }}</p>
+        {% if appointment.notes %}<p>{{ appointment.notes }}</p>{% endif %}
+        {% if appointment.behavior_alert %}<p>Behavior alert: {{ appointment.behavior_alert }}</p>{% endif %}
+        {% if appointment.recommended_shampoo %}<p>Recommended shampoo: {{ appointment.recommended_shampoo }}</p>{% endif %}
+        <span class="status-badge status-{{ appointment.status }}">{{ appointment.status|replace('_', ' ')|title }}</span>
+      </div>
+      <div class="action-grid compact-actions">
+        {% if appointment.status not in ['completed', 'cancelled', 'no_show'] %}
+        <form method="post" action="{{ url_for('staff.update_staff_status', appointment_id=appointment.id) }}">
+          <input type="hidden" name="status" value="completed">
+          <button class="button" type="submit">Done</button>
+        </form>
+        <form method="post" action="{{ url_for('staff.update_staff_status', appointment_id=appointment.id) }}">
+          <input type="hidden" name="status" value="cancelled">
+          <button class="button button-danger" type="submit">No-show</button>
+        </form>
+        {% endif %}
+      </div>
+      <form class="stack panel panel-inset" method="post" action="{{ url_for('staff.save_staff_note', appointment_id=appointment.id) }}">
+        <div class="grid-two">
+          <label>
+            <span>Quick note</span>
+            <input type="text" name="note" value="{{ appointment.notes or '' }}" placeholder="Add note">
+          </label>
+          <label>
+            <span>Behavior alert</span>
+            <input type="text" name="behavior_alert" value="{{ appointment.behavior_alert or '' }}" placeholder="Sensitive to dryer noise">
+          </label>
+        </div>
+        <div class="grid-three">
+          <label>
+            <span>Emotional condition</span>
+            <select name="emotional_condition">
+              <option value="">Select</option>
+              {% for value in ['calm', 'anxious', 'fearful', 'aggressive', 'hyperactive'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Handling level</span>
+            <select name="handling_level">
+              <option value="">Select</option>
+              {% for value in ['easy', 'moderate', 'high_support'] %}
+              <option value="{{ value }}" {% if appointment.handling_level == value %}selected{% endif %}>{{ value|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Recommended shampoo</span>
+            <input type="text" name="recommended_shampoo" value="{{ appointment.recommended_shampoo or '' }}">
+          </label>
+        </div>
+        <div class="grid-three">
+          <label>
+            <span>Coat type</span>
+            <select name="coat_type">
+              <option value="">Select</option>
+              {% for value in ['short', 'long', 'curly', 'double', 'wire'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Skin condition</span>
+            <select name="skin_condition">
+              <option value="">Select</option>
+              {% for value in ['normal', 'dry', 'sensitive', 'itchy', 'dandruff', 'odor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Parasite status</span>
+            <select name="parasite_status">
+              <option value="">Select</option>
+              {% for value in ['none', 'flea_risk', 'tick_risk', 'active_case'] %}
+              <option value="{{ value }}">{{ value|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="grid-three">
+          <label>
+            <span>Bath tolerance</span>
+            <select name="bath_tolerance">
+              <option value="">Select</option>
+              {% for value in ['good', 'fair', 'poor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Dryer tolerance</span>
+            <select name="dryer_tolerance">
+              <option value="">Select</option>
+              {% for value in ['good', 'fair', 'poor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Brushing tolerance</span>
+            <select name="brushing_tolerance">
+              <option value="">Select</option>
+              {% for value in ['good', 'fair', 'poor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="grid-three">
+          <label>
+            <span>Nail trim tolerance</span>
+            <select name="nail_trim_tolerance">
+              <option value="">Select</option>
+              {% for value in ['good', 'fair', 'poor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Ear cleaning tolerance</span>
+            <select name="ear_cleaning_tolerance">
+              <option value="">Select</option>
+              {% for value in ['good', 'fair', 'poor'] %}
+              <option value="{{ value }}">{{ value|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <label>
+            <span>Handling readiness</span>
+            <select name="handling_readiness">
+              <option value="">Select</option>
+              {% for value in ['ready', 'needs_care', 'high_support'] %}
+              <option value="{{ value }}">{{ value|replace('_', ' ')|title }}</option>
+              {% endfor %}
+            </select>
+          </label>
+        </div>
+        <fieldset class="checkbox-grid">
+          <legend>Triggers</legend>
+          <label class="check-pill"><input type="checkbox" name="trigger_noise"> <span>Noise</span></label>
+          <label class="check-pill"><input type="checkbox" name="trigger_touch"> <span>Touch</span></label>
+          <label class="check-pill"><input type="checkbox" name="trigger_dryer"> <span>Dryer</span></label>
+          <label class="check-pill"><input type="checkbox" name="trigger_nail_trim"> <span>Nail trim</span></label>
+          <label class="check-pill"><input type="checkbox" name="trigger_ear_cleaning"> <span>Ear cleaning</span></label>
+        </fieldset>
+        <label>
+          <span>Preparation notes</span>
+          <textarea name="prep_notes" rows="3">{{ appointment.prep_notes or '' }}</textarea>
+        </label>
+        <button class="button button-secondary" type="submit">Save Care Notes</button>
+      </form>
+    </article>
+    {% else %}
+    <p class="muted">No appointments scheduled today.</p>
+    {% endfor %}
+  </article>
+
+  <article class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Quick book</p>
+        <h3>Walk-in</h3>
+      </div>
+    </div>
+    <form class="stack" method="post" action="{{ url_for('staff.create_walkin_booking') }}">
+      <input type="hidden" name="quick_date" value="{{ quick_book_date.isoformat() }}">
+      <label>
+        <span>Owner</span>
+        <select name="owner_id" onchange="window.location='{{ url_for('staff.staff_portal', section='dashboard') }}?owner_id='+this.value+'&quick_date={{ quick_book_date.isoformat() }}'">
+          {% for owner in owners %}
+          <option value="{{ owner.id }}" {% if selected_owner_id == owner.id %}selected{% endif %}>{{ owner.name }} | {{ owner.email }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Pet</span>
+        <select name="pet_id" required>
+          {% for pet in owner_pets %}
+          <option value="{{ pet.id }}">{{ pet.name }} | {{ pet.breed }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        <span>Date</span>
+        <input type="date" value="{{ quick_book_date.isoformat() }}" onchange="window.location='{{ url_for('staff.staff_portal', section='dashboard') }}?owner_id={{ selected_owner_id or '' }}&quick_date='+this.value">
+      </label>
+      <label>
+        <span>Service</span>
+        <select name="service_name" required>
+          {% for name, info in service_details.items() %}
+          <option value="{{ name }}">{{ name }} | {{ info.price }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="slot-grid">
+        {% for slot in quick_slots %}
+        <label class="slot-option">
+          <input type="radio" name="slot_id" value="{{ slot.id }}" required>
+          <span>{{ slot.slot_start.strftime('%I:%M %p') }} - {{ slot.slot_end.strftime('%I:%M %p') }}</span>
+        </label>
+        {% else %}
+        <p class="muted">No open slots for this date.</p>
+        {% endfor %}
+      </div>
+      <label>
+        <span>Notes</span>
+        <textarea name="notes" rows="3"></textarea>
+      </label>
+      <button class="button" type="submit">Create Walk-in Booking</button>
+    </form>
+  </article>
+</section>
+{% elif section == 'health' %}
+<section class="panel stack">
+  <div class="section-head">
+    <div>
+      <p class="eyebrow">Health records</p>
+      <h3>Search pets</h3>
+    </div>
+  </div>
+  <form class="inline-form" method="get" action="{{ url_for('staff.staff_portal') }}">
+    <input type="hidden" name="section" value="health">
+    <input type="text" name="search" value="{{ search }}" placeholder="Search by pet, breed, or owner">
+    <button class="button" type="submit">Search</button>
+  </form>
+  {% for record in records %}
+  {% set show_owner_phone = false %}
+  {% include '_health_record_card.html' %}
+  {% else %}
+  <p class="muted">No matching records.</p>
+  {% endfor %}
+</section>
+
+{% elif section == 'owners' %}
+{% if selected_owner_data %}
+  
+  <section class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Owner Details</p>
+        <h3>{{ selected_owner_data.name }}</h3>
+      </div>
+      <a href="{{ url_for('staff.staff_portal', section='owners') }}" class="button button-secondary">← Back to All Owners</a>
+    </div>
+    
+    
+    <article class="panel stack" style="background: #f9f9f9; padding: 1.5rem; border-radius: 8px;">
+      <div class="grid-two">
+        <div>
+          <p><strong>Email:</strong> {{ selected_owner_data.email }}</p>
+          <p><strong>Phone:</strong> {{ selected_owner_data.phone or 'Not provided' }}</p>
+        </div>
+        <div>
+          <p><strong>Member Since:</strong> {{ selected_owner_data.created_at.strftime('%B %d, %Y') if selected_owner_data.created_at else 'N/A' }}</p>
+          <p><strong>Total Pets:</strong> {{ selected_owner_data.pets|length }}</p>
+        </div>
+      </div>
+    </article>
+    
+    
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Registered Pets</p>
+        <h3>{{ selected_owner_data.pets|length }} Pet(s)</h3>
+      </div>
+    </div>
+    
+    {% for pet in selected_owner_data.pets %}
+    <article class="panel stack" style="border-left: 4px solid {% if pet.allergies or pet.medical_history %}#ff9800{% else %}#4CAF50{% endif %};">
+      <div class="grid-two">
+        <div>
+          <h4>{{ pet.name }}</h4>
+          <p><strong>Species:</strong> {{ pet.species }} | <strong>Breed:</strong> {{ pet.breed }}</p>
+          <p><strong>Age:</strong> {{ pet.age }} years | <strong>Weight:</strong> {{ pet.weight }} kg</p>
+        </div>
+        <div>
+          {% if pet.allergies %}
+          <div style="background: #fff3e0; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+            <strong style="color: #e65100;">⚠️ Allergies:</strong> {{ pet.allergies }}
+          </div>
+          {% endif %}
+          {% if pet.medications %}
+          <div style="background: #e3f2fd; padding: 8px; border-radius: 4px; margin-bottom: 8px;">
+            <strong style="color: #1976d2;">💊 Medications:</strong> {{ pet.medications }}
+          </div>
+          {% endif %}
+          {% if pet.medical_history %}
+          <div style="background: #f3e5f5; padding: 8px; border-radius: 4px;">
+            <strong style="color: #7b1fa2;">🏥 Medical History:</strong> {{ pet.medical_history }}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      {% include '_pet_vaccination_manager.html' %}
+    </article>
+    {% else %}
+    <p class="muted">No pets registered yet.</p>
+    {% endfor %}
+    
+    
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Staff Notes</p>
+        <h3>Communication History</h3>
+      </div>
+    </div>
+    
+    {% for note in owner_notes_data %}
+    <article class="panel stack-sm" style="background: #fffde7; border-left: 3px solid #FFC107;">
+      <p><strong>{{ note.staff_name }}</strong> <span class="muted">{{ note.created_at.strftime('%b %d, %Y at %I:%M %p') if note.created_at else '' }}</span></p>
+      <p>{{ note.note }}</p>
+    </article>
+    {% else %}
+    <p class="muted">No staff notes yet.</p>
+    {% endfor %}
+    
+    
+    <form class="stack" method="post" action="{{ url_for('admin.add_owner_note', owner_id=selected_owner_data.id) }}" style="margin-top: 1rem;">
+      <label>
+        <span>Add a note about this owner</span>
+        <textarea name="note" rows="3" placeholder="E.g., Prefers morning appointments, follows up regularly, etc." required></textarea>
+      </label>
+      <button type="submit" class="button">Add Note</button>
+    </form>
+    
+    
+    {% if owner_appointments_data %}
+    <div class="section-head" style="margin-top: 2rem;">
+      <div>
+        <p class="eyebrow">Appointment History</p>
+        <h3>{{ owner_appointments_data|length }} Booking(s)</h3>
+      </div>
+    </div>
+    
+    {% for appt in owner_appointments_data[:10] %}
+    <article class="list-row stacked">
+      <div>
+        <strong>{{ appt.pet_name }} | {{ appt.service_name }}</strong>
+        <p>{{ appt.slot_start.strftime('%b %d, %Y at %I:%M %p') if appt.slot_start else 'N/A' }} | Groomer: {{ appt.groomer_name }}</p>
+      </div>
+      <span class="status-badge status-{{ appt.status }}">{{ appt.status|replace('_', ' ')|title }}</span>
+    </article>
+    {% endfor %}
+    {% endif %}
+  </section>
+
+{% else %}
+  
+  <section class="panel stack">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Owner Management</p>
+        <h3>All Registered Pet Owners</h3>
+      </div>
+    </div>
+    
+    
+    <form class="inline-form" method="get" action="{{ url_for('staff.staff_portal') }}" style="margin-bottom: 1.5rem;">
+      <input type="hidden" name="section" value="owners">
+      <input type="text" name="owner_search" value="{{ request.args.get('owner_search', '') }}" placeholder="Search by name, email, or phone">
+      <select name="has_pets_filter">
+        <option value="all" {% if request.args.get('has_pets_filter') == 'all' %}selected{% endif %}>All Owners</option>
+        <option value="with_pets" {% if request.args.get('has_pets_filter') == 'with_pets' %}selected{% endif %}>Has Pets</option>
+        <option value="no_pets" {% if request.args.get('has_pets_filter') == 'no_pets' %}selected{% endif %}>No Pets Yet</option>
+      </select>
+      <button class="button" type="submit">Search</button>
+    </form>
+    
+    
+    {% if owner_list_data and owner_list_data.owners %}
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Pets</th>
+          <th>Registered</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for owner in owner_list_data.owners %}
+        <tr>
+          <td><strong>{{ owner.name }}</strong></td>
+          <td>{{ owner.email }}</td>
+          <td>{{ owner.phone or 'N/A' }}</td>
+          <td>
+            <span class="pill-count" style="background: {% if owner.pet_count > 0 %}#4CAF50{% else %}#999{% endif %};">
+              {{ owner.pet_count }}
+            </span>
+          </td>
+          <td>{{ owner.created_at.strftime('%b %d, %Y') if owner.created_at else 'N/A' }}</td>
+          <td>
+            <a href="{{ url_for('staff.staff_portal', section='owners', owner_id=owner.id) }}" class="button button-secondary" style="font-size: 0.9rem; padding: 5px 10px;">View Details</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    
+    
+    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd; color: #666;">
+      Showing {{ owner_list_data.owners|length }} of {{ owner_list_data.total }} owner(s)
+    </div>
+    {% else %}
+    <p class="muted">No owners found matching your search criteria.</p>
+    {% endif %}
+  </section>
+{% endif %}
+
+{% else %}
+
+{% endif %}
+{% endblock %}
